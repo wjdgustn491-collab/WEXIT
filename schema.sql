@@ -1,0 +1,256 @@
+create extension if not exists pgcrypto;
+create extension if not exists vector;
+
+create table if not exists public.stores (
+    id uuid primary key default gen_random_uuid(),
+    name text not null,
+    hours text,
+    description text,
+    recommendation_keywords jsonb not null default '[]'::jsonb,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create table if not exists public.menus (
+    id uuid primary key default gen_random_uuid(),
+    store_id uuid not null references public.stores(id) on delete cascade,
+    name jsonb not null,
+    price numeric not null check (price >= 0),
+    currency text not null,
+    description jsonb not null,
+    tags jsonb not null default '[]'::jsonb,
+    image_data text,
+    image_url text,
+    is_sold_out boolean not null default false,
+    embedding vector(1536),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create table if not exists public.tables (
+    id uuid primary key default gen_random_uuid(),
+    store_id uuid not null references public.stores(id) on delete cascade,
+    table_code text not null,
+    x numeric not null check (x between 0 and 100),
+    y numeric not null check (y between 0 and 100),
+    status text not null check (
+        status in ('available', 'soon', 'reserved', 'occupied')
+    ),
+    view_name text not null default '',
+    tag text not null default '',
+    capacity integer not null default 4 check (capacity between 1 and 50),
+    sort_order integer not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    unique (store_id, table_code)
+);
+
+create table if not exists public.orders (
+    id uuid primary key default gen_random_uuid(),
+    store_id uuid not null references public.stores(id) on delete cascade,
+    table_id text not null,
+    menu_id uuid not null references public.menus(id) on delete restrict,
+    menu_name text not null,
+    quantity integer not null check (quantity >= 1),
+    total_price numeric not null check (total_price >= 0),
+    currency text not null,
+    status text not null default 'pending' check (
+        status in ('pending', 'completed', 'cancelled')
+    ),
+    customer_session_id text not null,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create table if not exists public.reservations (
+    id uuid primary key default gen_random_uuid(),
+    store_id uuid not null references public.stores(id) on delete cascade,
+    table_id text not null,
+    status text not null check (
+        status in ('reserved', 'waiting', 'accepted', 'cancelled')
+    ),
+    customer_session_id text not null,
+    party_size integer not null default 0 check (party_size between 0 and 50),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+create index if not exists menus_store_id_idx
+    on public.menus(store_id);
+create index if not exists tables_store_sort_idx
+    on public.tables(store_id, sort_order);
+create index if not exists orders_store_created_idx
+    on public.orders(store_id, created_at desc);
+create index if not exists orders_customer_session_idx
+    on public.orders(store_id, customer_session_id, created_at desc);
+create index if not exists reservations_store_created_idx
+    on public.reservations(store_id, created_at desc);
+create index if not exists reservations_customer_session_idx
+    on public.reservations(store_id, customer_session_id, created_at desc);
+create index if not exists reservations_waiting_idx
+    on public.reservations(store_id, status)
+    where status = 'waiting';
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$$;
+
+drop trigger if exists stores_set_updated_at on public.stores;
+create trigger stores_set_updated_at
+before update on public.stores
+for each row execute function public.set_updated_at();
+
+drop trigger if exists menus_set_updated_at on public.menus;
+create trigger menus_set_updated_at
+before update on public.menus
+for each row execute function public.set_updated_at();
+
+drop trigger if exists tables_set_updated_at on public.tables;
+create trigger tables_set_updated_at
+before update on public.tables
+for each row execute function public.set_updated_at();
+
+drop trigger if exists orders_set_updated_at on public.orders;
+create trigger orders_set_updated_at
+before update on public.orders
+for each row execute function public.set_updated_at();
+
+drop trigger if exists reservations_set_updated_at on public.reservations;
+create trigger reservations_set_updated_at
+before update on public.reservations
+for each row execute function public.set_updated_at();
+
+create or replace function public.replace_store_tables(
+    p_store_id uuid,
+    p_tables jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if jsonb_typeof(p_tables) <> 'array' then
+        raise exception 'p_tables must be a JSON array';
+    end if;
+
+    if exists (
+        select 1
+        from jsonb_array_elements(p_tables) item
+        group by upper(trim(item->>'table_code'))
+        having count(*) > 1
+    ) then
+        raise exception 'duplicate table_code';
+    end if;
+
+    delete from public.tables
+    where store_id = p_store_id
+      and table_code not in (
+          select upper(trim(item->>'table_code'))
+          from jsonb_array_elements(p_tables) item
+      );
+
+    insert into public.tables (
+        store_id,
+        table_code,
+        x,
+        y,
+        status,
+        view_name,
+        tag,
+        capacity,
+        sort_order
+    )
+    select
+        p_store_id,
+        upper(trim(item->>'table_code')),
+        (item->>'x')::numeric,
+        (item->>'y')::numeric,
+        item->>'status',
+        coalesce(item->>'view_name', ''),
+        coalesce(item->>'tag', ''),
+        coalesce((item->>'capacity')::integer, 4),
+        coalesce((item->>'sort_order')::integer, 0)
+    from jsonb_array_elements(p_tables) item
+    on conflict (store_id, table_code)
+    do update set
+        x = excluded.x,
+        y = excluded.y,
+        status = excluded.status,
+        view_name = excluded.view_name,
+        tag = excluded.tag,
+        capacity = excluded.capacity,
+        sort_order = excluded.sort_order,
+        updated_at = now();
+end;
+$$;
+
+create or replace function public.update_reservation_and_table(
+    p_store_id uuid,
+    p_reservation_id uuid,
+    p_status text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_reservation public.reservations%rowtype;
+begin
+    if p_status not in ('accepted', 'cancelled') then
+        raise exception 'invalid reservation status';
+    end if;
+
+    select *
+    into v_reservation
+    from public.reservations
+    where id = p_reservation_id
+      and store_id = p_store_id
+    for update;
+
+    if not found then
+        raise exception 'reservation not found';
+    end if;
+
+    update public.reservations
+    set status = p_status
+    where id = p_reservation_id
+    returning * into v_reservation;
+
+    if p_status = 'accepted' then
+        update public.tables
+        set status = 'reserved'
+        where store_id = p_store_id
+          and table_code = v_reservation.table_id;
+    elsif not exists (
+        select 1
+        from public.reservations
+        where store_id = p_store_id
+          and table_id = v_reservation.table_id
+          and status in ('reserved', 'waiting', 'accepted')
+    ) then
+        update public.tables
+        set status = 'available'
+        where store_id = p_store_id
+          and table_code = v_reservation.table_id;
+    end if;
+
+    return to_jsonb(v_reservation);
+end;
+$$;
+
+alter table public.stores enable row level security;
+alter table public.menus enable row level security;
+alter table public.tables enable row level security;
+alter table public.orders enable row level security;
+alter table public.reservations enable row level security;
+
+-- No browser-facing policies are created. The Python API uses the server-only
+-- Supabase service role key and is the sole data access layer for this release.

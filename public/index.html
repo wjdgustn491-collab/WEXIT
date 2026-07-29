@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q-menu | 스토어 로그인</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-surface: rgba(22, 28, 45, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-glow: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+            --input-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { 
+            background: var(--bg-base); 
+            color: var(--text-primary); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* Background Effects */
+        .bg-glow-1 { position: absolute; width: 400px; height: 400px; background: rgba(56, 189, 248, 0.15); filter: blur(100px); border-radius: 50%; top: -100px; left: -100px; z-index: 0; }
+        .bg-glow-2 { position: absolute; width: 300px; height: 300px; background: rgba(59, 130, 246, 0.15); filter: blur(100px); border-radius: 50%; bottom: -50px; right: -50px; z-index: 0; }
+
+        .auth-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .logo-area { 
+            display: flex; align-items: center; justify-content: center; gap: 0.75rem; 
+            font-size: 2rem; font-weight: 800; letter-spacing: -0.05em; 
+            background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            margin-bottom: 2rem; 
+        }
+        .logo-area i { -webkit-text-fill-color: initial; color: var(--accent-glow); }
+
+        .auth-title { text-align: center; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .auth-desc { text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .form-control { 
+            width: 100%; background: var(--input-bg); border: 1px solid var(--border-color); 
+            border-radius: 12px; padding: 0.85rem 1rem; color: var(--text-primary); 
+            transition: all 0.2s ease; outline: none;
+        }
+        .form-control:focus {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn { 
+            background: var(--accent-gradient); color: #fff; border: none; padding: 0.85rem 1.5rem; 
+            border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; 
+            transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+            margin-top: 1rem;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
+        .btn:active { transform: translateY(1px); }
+
+        .auth-switch { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary); }
+        .auth-switch a { color: var(--accent-glow); text-decoration: none; font-weight: 600; cursor: pointer; }
+        .auth-switch a:hover { text-decoration: underline; }
+
+        /* Animation */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hidden { display: none !important; }
+        
+        .lang-select-wrapper {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 20;
+        }
+        .lang-select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            backdrop-filter: blur(10px);
+        }
+        .lang-select option {
+            background: var(--bg-base);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="lang-select-wrapper">
+        <select id="langSelect" class="lang-select" onchange="changeLanguage(this.value)">
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="en">🇺🇸 English</option>
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+        </select>
+    </div>
+
+    <div class="auth-container">
+        <div class="logo-area">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Q-menu</span>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form" class="fade-in">
+            <h1 class="auth-title" data-i18n="login_title">로그인</h1>
+            <p class="auth-desc" data-i18n="login_desc">스토어 관리자 대시보드에 접근합니다.</p>
+            <p data-i18n="demo_notice" style="font-size:0.78rem; line-height:1.5; color:var(--text-secondary); margin:-0.5rem 0 1.25rem;">
+                현재 로그인은 배포 확인용 데모이며 실제 인증 기능이 아닙니다.
+            </p>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label data-i18n="lbl_email">이메일</label>
+                    <input type="email" id="login-email" class="form-control" placeholder="admin@q-menu.io" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lbl_password">비밀번호</label>
+                    <input type="password" id="login-pw" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn" data-i18n="btn_login">로그인</button>
+            </form>
+            <div class="auth-switch">
+                <span data-i18n="no_account">아직 계정이 없으신가요?</span> <a onclick="toggleAuth('signup')" data-i18n="btn_goto_signup">스토어 가입하기</a>
+            </div>
+        </div>
+
+        <!-- Signup Form -->
+        <div id="signup-form" class="fade-in hidden">
+            <h1 class="auth-title" data-i18n="signup_title">스토어 가입하기</h1>
+            <p class="auth-desc" data-i18n="signup_desc">새로운 매장 관리자 계정을 생성하세요.</p>
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label data-i18n="lbl_storename">매장 이름</label>
+                    <input type="text" id="signup-name" class="form-control" placeholder="예: 맛있는 버거집" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lbl_email">이메일</label>
+                    <input type="email" id="signup-email" class="form-control" placeholder="store@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="lbl_password">비밀번호</label>
+                    <input type="password" id="signup-pw" class="form-control" placeholder="8자리 이상 입력" required>
+                </div>
+                <button type="submit" class="btn" data-i18n="btn_signup">가입 완료</button>
+            </form>
+            <div class="auth-switch">
+                <span data-i18n="has_account">이미 계정이 있으신가요?</span> <a onclick="toggleAuth('login')" data-i18n="btn_goto_login">로그인</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const i18n = {
+            ko: {
+                login_title: "로그인",
+                login_desc: "스토어 관리자 대시보드에 접근합니다.",
+                lbl_email: "이메일",
+                lbl_password: "비밀번호",
+                btn_login: "로그인",
+                no_account: "아직 계정이 없으신가요?",
+                btn_goto_signup: "스토어 가입하기",
+                signup_title: "스토어 가입하기",
+                signup_desc: "새로운 매장 관리자 계정을 생성하세요.",
+                lbl_storename: "매장 이름",
+                btn_signup: "가입 완료",
+                has_account: "이미 계정이 있으신가요?",
+                btn_goto_login: "로그인",
+                ph_email: "admin@q-menu.io",
+                ph_pw: "••••••••",
+                ph_store: "예: 맛있는 버거집",
+                ph_pw2: "8자리 이상 입력",
+                alert_signup: "회원가입이 완료되었습니다! 로그인 화면으로 이동합니다.",
+                demo_notice: "현재 로그인은 배포 확인용 데모이며 실제 인증 기능이 아닙니다."
+            },
+            en: {
+                login_title: "Login",
+                login_desc: "Access the store admin dashboard.",
+                lbl_email: "Email",
+                lbl_password: "Password",
+                btn_login: "Login",
+                no_account: "Don't have an account?",
+                btn_goto_signup: "Sign up for a store",
+                signup_title: "Sign up for a store",
+                signup_desc: "Create a new store admin account.",
+                lbl_storename: "Store Name",
+                btn_signup: "Complete Sign up",
+                has_account: "Already have an account?",
+                btn_goto_login: "Login",
+                ph_email: "admin@q-menu.io",
+                ph_pw: "••••••••",
+                ph_store: "e.g., Tasty Burger",
+                ph_pw2: "At least 8 characters",
+                alert_signup: "Sign up complete! Redirecting to login screen.",
+                demo_notice: "This login is a deployment demo and does not provide real authentication."
+            },
+            vi: {
+                login_title: "Đăng nhập",
+                login_desc: "Truy cập bảng điều khiển quản trị viên cửa hàng.",
+                lbl_email: "Email",
+                lbl_password: "Mật khẩu",
+                btn_login: "Đăng nhập",
+                no_account: "Chưa có tài khoản?",
+                btn_goto_signup: "Đăng ký cửa hàng",
+                signup_title: "Đăng ký cửa hàng",
+                signup_desc: "Tạo một tài khoản quản trị cửa hàng mới.",
+                lbl_storename: "Tên cửa hàng",
+                btn_signup: "Hoàn tất đăng ký",
+                has_account: "Đã có tài khoản?",
+                btn_goto_login: "Đăng nhập",
+                ph_email: "admin@q-menu.io",
+                ph_pw: "••••••••",
+                ph_store: "VD: Quán Burger Ngon",
+                ph_pw2: "Nhập ít nhất 8 ký tự",
+                alert_signup: "Đăng ký hoàn tất! Đang chuyển hướng đến đăng nhập.",
+                demo_notice: "Đăng nhập này chỉ là bản demo triển khai, không phải xác thực thực tế."
+            }
+        };
+
+        let currentLang = 'ko';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const dict = i18n[lang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+
+            document.getElementById('login-email').placeholder = dict.ph_email;
+            document.getElementById('login-pw').placeholder = dict.ph_pw;
+            document.getElementById('signup-name').placeholder = dict.ph_store;
+            document.getElementById('signup-email').placeholder = dict.ph_email;
+            document.getElementById('signup-pw').placeholder = dict.ph_pw2;
+        }
+
+        function toggleAuth(type) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            
+            if (type === 'signup') {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+            } else {
+                signupForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            window.location.href = '/admin.html';
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            alert(i18n[currentLang].alert_signup);
+            toggleAuth('login');
+        }
+    </script>
+</body>
+</html>
