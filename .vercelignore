@@ -1,0 +1,7 @@
+.env*
+.vercel/
+__pycache__/
+*.pyc
+*.log
+README.md
+DEPLOYMENT.md
