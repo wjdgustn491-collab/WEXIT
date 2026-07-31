@@ -135,6 +135,73 @@
 
         .menu-card { border-radius: 12px; overflow: hidden; }
         .menu-card img { display: block; }
+
+        /* Keep the floor-plan origin stable when translated copy gets longer. */
+        .home-header { height: 112px; }
+        .home-stats-card { height: 96px; }
+        .home-prompt { min-height: 80px; }
+        .home-stat {
+            min-width: 0;
+            display: grid;
+            grid-template-rows: 18px 22px 24px;
+            align-content: center;
+            justify-items: center;
+        }
+        .home-stat-label {
+            width: 100%;
+            min-width: 0;
+            line-height: 12px;
+            text-align: center;
+            overflow-wrap: normal;
+            word-break: keep-all;
+        }
+        .floor-plan-legend { height: 42px; }
+
+        /* Navigation geometry must not depend on translated label length. */
+        .bottom-nav-item {
+            flex: 0 0 20%;
+            min-width: 0;
+            height: 44px;
+            display: grid;
+            grid-template-rows: 22px 12px;
+            row-gap: 4px;
+            align-content: start;
+            justify-items: center;
+        }
+        .bottom-nav-icon {
+            width: 24px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bottom-nav-label {
+            display: block;
+            width: 100%;
+            height: 12px;
+            overflow: hidden;
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 12px;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bottom-nav-chat-icon { transform: translateY(-20px); }
+
+        /* Fixed layers prevent facility labels from affecting the map geometry. */
+        .floor-plan-indoor { position: absolute; inset: 0 auto 0 0; width: 70%; }
+        .floor-plan-terrace { position: absolute; inset: 0 0 0 auto; width: 30%; }
+        .floor-plan-kitchen { position: absolute; top: 0; left: 0; width: 96px; height: 112px; }
+        .floor-plan-restroom { position: absolute; top: 0; left: 96px; width: 64px; height: 80px; }
+        .floor-plan-bar { position: absolute; top: 16px; right: 40px; width: 160px; height: 48px; }
+
+        .review-textarea { resize: none; overflow-y: hidden; min-height: 92px; }
+        .rating-star { position: relative; width: 32px; height: 32px; line-height: 32px; }
+        .rating-star-base, .rating-star-fill { position: absolute; inset: 0; font-size: 28px; line-height: 32px; }
+        .rating-star-base { color: #e5e7eb; }
+        .rating-star-fill { color: #E0A83C; overflow: hidden; white-space: nowrap; }
+
         /* Lightbox styles */
         .lightbox-overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.75); z-index: 9999; padding: 20px; }
         .lightbox-inner { position: relative; max-width: 980px; width: 100%; max-height: 95vh; display: flex; align-items: center; justify-content: center; }
@@ -238,8 +305,8 @@
                 webMode: '인터넷 배포용 모드 (메뉴 탐색 전용 / 예약 및 주문 불가)', greeting: '안녕하세요! 메뉴 추천이나 스마트 주문을 도와드릴까요?', aiTitle: 'AI 오더 어시스턴트', today: '오늘', preparing: '답변을 준비하고 있어요...', chatPlaceholder: '먹고 싶은 메뉴를 말해주세요...', noImage: '이미지 없음', recommended: '추천 메뉴', networkError: '네트워크 오류가 발생했습니다.', demoImage: '매장에 설정된 메뉴 사진입니다.',
                 noMenus: '등록된 메뉴가 없습니다.', soldOut: '품절', storeOnlyOrder: '매장 전용 주문', orderOne: '1개 주문하기', webNoOrder: '인터넷 탐색 전용 모드에서는 주문이 불가합니다. 매장을 방문해주세요!', tablePrompt: '현재 앉아계신 테이블 번호를 입력하세요 (예: T12):',
                 myActivity: '나의 예약·주문 현황', reservations: '예약 현황', orders: '주문 현황', noReservations: '예약 내역이 없습니다.', noOrders: '주문 내역이 없습니다.', approvalWaiting: '승인 대기 중', approved: '승인 완료', cancelled: '취소/거절됨', quantity: '수량', total: '총 금액', cooking: '조리 중', served: '서빙 완료', orderCancelled: '주문 취소', countUnit: '개',
-                storeReviews: '가게 리뷰', writeReview: '리뷰 작성', rating: '별점', reviewText: '리뷰 내용', reviewPlaceholder: '매장 이용 경험을 알려주세요.', reviewPhoto: '사진 등록 (선택)', submitReview: '리뷰 등록하기', noReviews: '아직 작성된 리뷰가 없습니다.', reviewSaved: '리뷰가 등록되었습니다.',
-                settings: '설정', language: '언어', languageDesc: '선택 즉시 화면, 가격과 AI 챗봇 언어가 변경됩니다.', close: '닫기', hours: '운영 시간', loadFailed: '정보를 불러오지 못했습니다.', reservationSubmitted: '예약 요청이 등록되었습니다.', orderSubmitted: '주문이 완료되었습니다.', imageError: 'JPEG, PNG, WEBP 형식의 2MB 이하 사진을 선택해주세요.'
+                storeReviews: '가게 리뷰', writeReview: '리뷰 작성', rating: '별점', reviewText: '리뷰 내용', reviewPlaceholder: '매장 이용 경험을 알려주세요.', reviewPhoto: '사진 등록 (선택)', reviewPhotoHint: 'JPEG, PNG, WEBP · 최대 5MB', submitReview: '리뷰 등록하기', noReviews: '아직 작성된 리뷰가 없습니다.', reviewSaved: '리뷰가 등록되었습니다.', reviewSaveFailed: '리뷰를 등록하지 못했습니다.',
+                settings: '설정', language: '언어', languageDesc: '선택 즉시 화면, 가격과 AI 챗봇 언어가 변경됩니다.', close: '닫기', hours: '운영 시간', loadFailed: '정보를 불러오지 못했습니다.', reservationSubmitted: '예약 요청이 등록되었습니다.', orderSubmitted: '주문이 완료되었습니다.', imageError: 'JPEG, PNG, WEBP 형식의 5MB 이하 사진을 선택해주세요.', allCategories: '전체메뉴', replyLabel: '답글'
             },
             en: {
                 floorReservation: 'Floor Plan', activity: 'Bookings & Orders', chatbot: 'AI Chat', fullMenu: 'Menu', reviews: 'Reviews',
@@ -248,8 +315,8 @@
                 webMode: 'Online browsing mode (menu only / ordering and booking unavailable)', greeting: 'Hello! Can I help with menu recommendations or smart ordering?', aiTitle: 'AI Order Assistant', today: 'Today', preparing: 'Preparing a response...', chatPlaceholder: 'Tell me what you would like to eat...', noImage: 'No image', recommended: 'Recommended', networkError: 'A network error occurred.', demoImage: 'Here are menu photos provided by the store.',
                 noMenus: 'No menu items are available.', soldOut: 'Sold out', storeOnlyOrder: 'Order in store', orderOne: 'Order one', webNoOrder: 'Ordering is unavailable in browsing mode. Please visit the store.', tablePrompt: 'Enter your current table number (e.g. T12):',
                 myActivity: 'My Bookings & Orders', reservations: 'Bookings', orders: 'Orders', noReservations: 'No booking history.', noOrders: 'No order history.', approvalWaiting: 'Awaiting approval', approved: 'Approved', cancelled: 'Cancelled / Declined', quantity: 'Qty', total: 'Total', cooking: 'Preparing', served: 'Served', orderCancelled: 'Cancelled', countUnit: '',
-                storeReviews: 'Store Reviews', writeReview: 'Write a Review', rating: 'Rating', reviewText: 'Review', reviewPlaceholder: 'Tell us about your experience.', reviewPhoto: 'Add photo (optional)', submitReview: 'Submit Review', noReviews: 'There are no reviews yet.', reviewSaved: 'Your review was submitted.',
-                settings: 'Settings', language: 'Language', languageDesc: 'The interface, prices, and AI chat language update immediately.', close: 'Close', hours: 'Hours', loadFailed: 'Could not load information.', reservationSubmitted: 'Your booking request was submitted.', orderSubmitted: 'Your order was placed.', imageError: 'Choose a JPEG, PNG, or WEBP image up to 2MB.'
+                storeReviews: 'Store Reviews', writeReview: 'Write a Review', rating: 'Rating', reviewText: 'Review', reviewPlaceholder: 'Tell us about your experience.', reviewPhoto: 'Add photo (optional)', reviewPhotoHint: 'JPEG, PNG, WEBP · up to 5MB', submitReview: 'Submit Review', noReviews: 'There are no reviews yet.', reviewSaved: 'Your review was submitted.', reviewSaveFailed: 'Could not submit the review.',
+                settings: 'Settings', language: 'Language', languageDesc: 'The interface, prices, and AI chat language update immediately.', close: 'Close', hours: 'Hours', loadFailed: 'Could not load information.', reservationSubmitted: 'Your booking request was submitted.', orderSubmitted: 'Your order was placed.', imageError: 'Choose a JPEG, PNG, or WEBP image up to 5MB.', allCategories: 'All Menu', replyLabel: 'Reply'
             },
             vi: {
                 floorReservation: 'Sơ đồ bàn', activity: 'Đặt chỗ & Đơn', chatbot: 'Chat AI', fullMenu: 'Thực đơn', reviews: 'Đánh giá',
@@ -258,8 +325,8 @@
                 webMode: 'Chế độ xem trực tuyến (chỉ xem thực đơn / không thể đặt món, đặt bàn)', greeting: 'Xin chào! Tôi có thể gợi ý món hoặc hỗ trợ đặt món không?', aiTitle: 'Trợ lý đặt món AI', today: 'Hôm nay', preparing: 'Đang chuẩn bị câu trả lời...', chatPlaceholder: 'Hãy cho tôi biết bạn muốn ăn gì...', noImage: 'Không có ảnh', recommended: 'Món gợi ý', networkError: 'Đã xảy ra lỗi mạng.', demoImage: 'Đây là ảnh món ăn do nhà hàng cung cấp.',
                 noMenus: 'Chưa có món ăn.', soldOut: 'Hết món', storeOnlyOrder: 'Đặt tại quán', orderOne: 'Đặt 1 phần', webNoOrder: 'Không thể đặt món trong chế độ xem. Vui lòng đến quán.', tablePrompt: 'Nhập số bàn hiện tại (ví dụ: T12):',
                 myActivity: 'Đặt chỗ & Đơn của tôi', reservations: 'Đặt chỗ', orders: 'Đơn hàng', noReservations: 'Không có lịch sử đặt chỗ.', noOrders: 'Không có lịch sử đơn hàng.', approvalWaiting: 'Chờ xác nhận', approved: 'Đã xác nhận', cancelled: 'Đã hủy / Từ chối', quantity: 'Số lượng', total: 'Tổng', cooking: 'Đang chuẩn bị', served: 'Đã phục vụ', orderCancelled: 'Đã hủy', countUnit: 'phần',
-                storeReviews: 'Đánh giá cửa hàng', writeReview: 'Viết đánh giá', rating: 'Số sao', reviewText: 'Nội dung', reviewPlaceholder: 'Chia sẻ trải nghiệm của bạn.', reviewPhoto: 'Thêm ảnh (không bắt buộc)', submitReview: 'Gửi đánh giá', noReviews: 'Chưa có đánh giá.', reviewSaved: 'Đã gửi đánh giá.',
-                settings: 'Cài đặt', language: 'Ngôn ngữ', languageDesc: 'Giao diện, giá và ngôn ngữ AI thay đổi ngay lập tức.', close: 'Đóng', hours: 'Giờ mở cửa', loadFailed: 'Không thể tải thông tin.', reservationSubmitted: 'Đã gửi yêu cầu đặt bàn.', orderSubmitted: 'Đã đặt món thành công.', imageError: 'Chọn ảnh JPEG, PNG hoặc WEBP tối đa 2MB.'
+                storeReviews: 'Đánh giá cửa hàng', writeReview: 'Viết đánh giá', rating: 'Số sao', reviewText: 'Nội dung', reviewPlaceholder: 'Chia sẻ trải nghiệm của bạn.', reviewPhoto: 'Thêm ảnh (không bắt buộc)', reviewPhotoHint: 'JPEG, PNG, WEBP · tối đa 5MB', submitReview: 'Gửi đánh giá', noReviews: 'Chưa có đánh giá.', reviewSaved: 'Đã gửi đánh giá.', reviewSaveFailed: 'Không thể gửi đánh giá.',
+                settings: 'Cài đặt', language: 'Ngôn ngữ', languageDesc: 'Giao diện, giá và ngôn ngữ AI thay đổi ngay lập tức.', close: 'Đóng', hours: 'Giờ mở cửa', loadFailed: 'Không thể tải thông tin.', reservationSubmitted: 'Đã gửi yêu cầu đặt bàn.', orderSubmitted: 'Đã đặt món thành công.', imageError: 'Chọn ảnh JPEG, PNG hoặc WEBP tối đa 5MB.', allCategories: 'Toàn bộ thực đơn', replyLabel: 'Phản hồi'
             }
         };
 
@@ -292,10 +359,12 @@
             return new Intl.NumberFormat(locale, { style: 'currency', currency: targetCurrency, maximumFractionDigits: digits }).format(converted);
         }
 
+        const MAX_REVIEW_IMAGE_BYTES = 5 * 1024 * 1024;
+
         function prepareImage(file) {
             return new Promise((resolve, reject) => {
                 if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return reject(new Error('JPEG, PNG, WEBP only'));
-                if (file.size > 2 * 1024 * 1024) return reject(new Error('Image must be 2MB or smaller'));
+                if (file.size > MAX_REVIEW_IMAGE_BYTES) return reject(new Error('Image must be 5MB or smaller'));
                 const reader = new FileReader();
                 reader.onerror = () => reject(new Error('Could not read image'));
                 reader.onload = event => {
@@ -307,7 +376,11 @@
                         canvas.width = Math.max(1, Math.round(image.width * scale));
                         canvas.height = Math.max(1, Math.round(image.height * scale));
                         canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL(file.type, 0.8));
+                        const dataUrl = canvas.toDataURL(file.type, 0.8);
+                        const encoded = dataUrl.split(',', 2)[1] || '';
+                        const outputBytes = Math.floor(encoded.length * 3 / 4);
+                        if (outputBytes > MAX_REVIEW_IMAGE_BYTES) return reject(new Error('Processed image exceeds 5MB'));
+                        resolve(dataUrl);
                     };
                     image.src = event.target.result;
                 };
@@ -323,28 +396,28 @@
         function BottomNav({ activeTab, setActiveTab }) {
             const { t } = useLocale();
             return (
-                <div className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around py-2 pb-5 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] rounded-t-3xl" style={{height: 'var(--bottom-nav-height)'}}>
-                    <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-brand-green' : 'text-gray-400'}`}>
-                        <i className="fa-solid fa-map-location-dot text-lg"></i>
-                        <span className="text-[9px] font-bold">{t.floorReservation}</span>
+                <div className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex py-2 pb-5 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] rounded-t-3xl" style={{height: 'var(--bottom-nav-height)'}}>
+                    <button onClick={() => setActiveTab('home')} className={`bottom-nav-item ${activeTab === 'home' ? 'text-brand-green' : 'text-gray-400'}`}>
+                        <span className="bottom-nav-icon"><i className="fa-solid fa-map-location-dot text-lg"></i></span>
+                        <span className="bottom-nav-label">{t.floorReservation}</span>
                     </button>
-                    <button onClick={() => setActiveTab('reservation')} className={`flex flex-col items-center gap-1 ${activeTab === 'reservation' ? 'text-brand-green' : 'text-gray-400'}`}>
-                        <i className="fa-regular fa-calendar-check text-lg"></i>
-                        <span className="text-[9px] font-bold">{t.activity}</span>
+                    <button onClick={() => setActiveTab('reservation')} className={`bottom-nav-item ${activeTab === 'reservation' ? 'text-brand-green' : 'text-gray-400'}`}>
+                        <span className="bottom-nav-icon"><i className="fa-regular fa-calendar-check text-lg"></i></span>
+                        <span className="bottom-nav-label">{t.activity}</span>
                     </button>
-                    <button onClick={() => setActiveTab('chat')} className={`flex flex-col items-center gap-1 ${activeTab === 'chat' ? 'text-brand-green' : 'text-gray-400'}`}>
-                        <div className={`w-12 h-12 -mt-5 rounded-full flex items-center justify-center text-white shadow-lg ${activeTab === 'chat' ? 'bg-brand-green' : 'bg-gray-300'}`}>
+                    <button onClick={() => setActiveTab('chat')} className={`bottom-nav-item ${activeTab === 'chat' ? 'text-brand-green' : 'text-gray-400'}`}>
+                        <div className={`bottom-nav-chat-icon w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg ${activeTab === 'chat' ? 'bg-brand-green' : 'bg-gray-300'}`}>
                             <i className="fa-solid fa-robot text-xl"></i>
                         </div>
-                        <span className="text-[9px] font-bold">{t.chatbot}</span>
+                        <span className="bottom-nav-label">{t.chatbot}</span>
                     </button>
-                    <button onClick={() => setActiveTab('menu')} className={`flex flex-col items-center gap-1 ${activeTab === 'menu' ? 'text-brand-green' : 'text-gray-400'}`}>
-                        <i className="fa-solid fa-utensils text-lg"></i>
-                        <span className="text-[9px] font-bold">{t.fullMenu}</span>
+                    <button onClick={() => setActiveTab('menu')} className={`bottom-nav-item ${activeTab === 'menu' ? 'text-brand-green' : 'text-gray-400'}`}>
+                        <span className="bottom-nav-icon"><i className="fa-solid fa-utensils text-lg"></i></span>
+                        <span className="bottom-nav-label">{t.fullMenu}</span>
                     </button>
-                    <button onClick={() => setActiveTab('reviews')} className={`flex flex-col items-center gap-1 ${activeTab === 'reviews' ? 'text-brand-green' : 'text-gray-400'}`}>
-                        <i className="fa-solid fa-star text-lg"></i>
-                        <span className="text-[9px] font-bold">{t.reviews}</span>
+                    <button onClick={() => setActiveTab('reviews')} className={`bottom-nav-item ${activeTab === 'reviews' ? 'text-brand-green' : 'text-gray-400'}`}>
+                        <span className="bottom-nav-icon"><i className="fa-solid fa-star text-lg"></i></span>
+                        <span className="bottom-nav-label">{t.reviews}</span>
                     </button>
                 </div>
             );
@@ -380,54 +453,54 @@
             return (
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-24 relative">
                     {/* Header */}
-                    <div className="bg-white px-5 py-4 pt-12 shadow-sm relative z-20">
+                    <div className="home-header shrink-0 overflow-hidden bg-white px-5 py-4 pt-12 shadow-sm relative z-20">
                         {appMode === 'web' && (
                             <div className="absolute top-0 left-0 w-full bg-red-500 text-white text-center text-[10px] py-1 font-bold z-50">
                                 {t.webMode}
                             </div>
                         )}
-                        <div className="flex items-center gap-3 mb-1">
-                            <i className="fa-solid fa-arrow-left text-lg"></i>
-                            <h1 className="text-xl font-bold">{localized(storeInfo.name_i18n || storeInfo.name, language)} <i className="fa-regular fa-heart text-gray-400 text-base"></i></h1>
-                            <div className="ml-auto bg-brand-bg px-3 py-1.5 rounded-full text-xs font-semibold text-brand-textDark flex items-center gap-1 cursor-pointer active:scale-95" onClick={onShowStoreInfo}>
+                        <div className="flex items-center gap-3 mb-1 min-w-0">
+                            <i className="fa-solid fa-arrow-left text-lg shrink-0"></i>
+                            <h1 className="min-w-0 truncate text-xl font-bold">{localized(storeInfo.name_i18n || storeInfo.name, language)} <i className="fa-regular fa-heart text-gray-400 text-base"></i></h1>
+                            <div className="ml-auto shrink-0 bg-brand-bg px-3 py-1.5 rounded-full text-xs font-semibold text-brand-textDark flex items-center gap-1 cursor-pointer active:scale-95" onClick={onShowStoreInfo}>
                                 <i className="fa-solid fa-circle-info text-[10px]"></i> {t.storeInfo}
                             </div>
                         </div>
-                        <p className="text-sm text-brand-textLight ml-7">{localized(storeInfo.description_i18n || storeInfo.description, language)}</p>
+                        <p className="truncate text-sm text-brand-textLight ml-7">{localized(storeInfo.description_i18n || storeInfo.description, language)}</p>
                     </div>
 
                     {/* Stats Card */}
                     <div className="px-4 py-3">
-                        <div className="bg-white rounded-2xl p-4 shadow-soft flex items-center justify-between">
-                            <div>
+                        <div className="home-stats-card bg-white rounded-2xl px-3 py-3 shadow-soft flex items-center">
+                            <div className="w-[38%] min-w-0 pr-2">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-brand-greenLight animate-pulse"></div>
-                                    <span className="font-bold text-[15px]">{t.seatsLive}</span>
+                                    <div className="w-2.5 h-2.5 shrink-0 rounded-full bg-brand-greenLight animate-pulse"></div>
+                                    <span className="truncate whitespace-nowrap font-bold text-[15px]">{t.seatsLive}</span>
                                 </div>
-                                <div className="text-[11px] text-gray-400 flex items-center gap-1 ml-4">
-                                    {t.refreshHint} <i className="fa-solid fa-rotate-right"></i>
+                                <div className="h-6 overflow-hidden text-[11px] leading-3 text-gray-400 flex items-start gap-1 ml-4">
+                                    <span>{t.refreshHint}</span><i className="fa-solid fa-rotate-right shrink-0 mt-0.5"></i>
                                 </div>
                             </div>
-                            <div className="flex gap-4 text-center">
-                                <div>
+                            <div className="grid grid-cols-4 flex-1 min-w-0 h-full text-center">
+                                <div className="home-stat">
                                     <i className="fa-solid fa-couch text-[#799a74] mb-1"></i>
                                     <div className="font-bold">{statusCounts.available}</div>
-                                    <div className="text-[10px] text-gray-500">{t.available}</div>
+                                    <div className="home-stat-label text-[10px] text-gray-500">{t.available}</div>
                                 </div>
-                                <div className="border-l border-gray-100 pl-3">
+                                <div className="home-stat border-l border-gray-100">
                                     <i className="fa-solid fa-clock text-[#d19f4d] mb-1"></i>
                                     <div className="font-bold">{statusCounts.soon}</div>
-                                    <div className="text-[10px] text-gray-500">{t.soon}</div>
+                                    <div className="home-stat-label text-[10px] text-gray-500">{t.soon}</div>
                                 </div>
-                                <div className="border-l border-gray-100 pl-3">
+                                <div className="home-stat border-l border-gray-100">
                                     <i className="fa-solid fa-bookmark text-[#5b7c99] mb-1"></i>
                                     <div className="font-bold">{statusCounts.reserved}</div>
-                                    <div className="text-[10px] text-gray-500">{t.reserved}</div>
+                                    <div className="home-stat-label text-[10px] text-gray-500">{t.reserved}</div>
                                 </div>
-                                <div className="border-l border-gray-100 pl-3">
+                                <div className="home-stat border-l border-gray-100">
                                     <i className="fa-solid fa-user text-[#c06c6c] mb-1"></i>
                                     <div className="font-bold">{statusCounts.occupied}</div>
-                                    <div className="text-[10px] text-gray-500">{t.occupied}</div>
+                                    <div className="home-stat-label text-[10px] text-gray-500">{t.occupied}</div>
                                 </div>
                             </div>
                         </div>
@@ -437,34 +510,34 @@
                     <div className="px-4 pb-4">
                         <div className="bg-white rounded-2xl shadow-soft overflow-hidden border border-white/50">
                             {/* Legend */}
-                            <div className="flex flex-wrap items-center justify-between p-3 border-b border-gray-100 text-[10px] font-semibold text-gray-600 gap-y-2">
-                                <div className="flex gap-3">
-                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#799a74]"></span> {t.available}</span>
-                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#d19f4d]"></span> {t.soon}</span>
-                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#5b7c99]"></span> {t.reserved}</span>
+                            <div className="floor-plan-legend no-scrollbar overflow-x-auto flex flex-nowrap items-center justify-between p-3 border-b border-gray-100 text-[10px] font-semibold text-gray-600">
+                                <div className="flex shrink-0 gap-3">
+                                    <span className="flex items-center gap-1 whitespace-nowrap"><span className="w-3 h-3 shrink-0 rounded bg-[#799a74]"></span> {t.available}</span>
+                                    <span className="flex items-center gap-1 whitespace-nowrap"><span className="w-3 h-3 shrink-0 rounded bg-[#d19f4d]"></span> {t.soon}</span>
+                                    <span className="flex items-center gap-1 whitespace-nowrap"><span className="w-3 h-3 shrink-0 rounded bg-[#5b7c99]"></span> {t.reserved}</span>
                                 </div>
-                                <div className="flex gap-3">
+                                <div className="flex shrink-0 gap-3 ml-3">
                                     <span className="flex items-center gap-1 border border-dashed border-[#4CAF7D] bg-[#4CAF7D]/10 px-1 rounded">{t.terrace}</span>
                                     <span className="flex items-center gap-1 text-[#E0A83C]"><i className="fa-solid fa-star"></i> {t.popular}</span>
                                 </div>
                             </div>
 
                             {/* The Floor Plan container */}
-                            <div className="relative w-full h-[400px] flex">
+                            <div className="relative w-full h-[400px]">
                                 {/* Indoor (Wood) */}
-                                <div className="w-[70%] h-full texture-wood relative border-r-[4px] border-[#a08466]">
+                                <div className="floor-plan-indoor h-full texture-wood border-r-[4px] border-[#a08466]">
                                     {/* Kitchen & Restroom placeholders */}
-                                    <div className="absolute top-0 left-0 w-24 h-28 bg-[#d8d8d8] border-r-2 border-b-2 border-[#b5b5b5] flex items-center justify-center text-xs font-bold text-gray-500">{t.kitchen}</div>
-                                    <div className="absolute top-0 left-24 w-16 h-20 bg-[#e8e8e8] border-r-2 border-b-2 border-[#b5b5b5] flex flex-col items-center justify-center text-xs font-bold text-gray-500">
-                                        {t.restroom}
+                                    <div className="floor-plan-kitchen bg-[#d8d8d8] border-r-2 border-b-2 border-[#b5b5b5] flex items-center justify-center overflow-hidden whitespace-nowrap text-xs font-bold text-gray-500">{t.kitchen}</div>
+                                    <div className="floor-plan-restroom bg-[#e8e8e8] border-r-2 border-b-2 border-[#b5b5b5] flex flex-col items-center justify-center overflow-hidden text-center text-xs font-bold text-gray-500">
+                                        <span className="max-w-full whitespace-nowrap">{t.restroom}</span>
                                         <div className="flex gap-1 mt-1"><i className="fa-solid fa-person"></i><i className="fa-solid fa-person-dress"></i></div>
                                     </div>
                                     {/* Bar */}
-                                    <div className="absolute top-4 right-10 w-40 h-12 bg-[#f0f0f0] border-2 border-[#d0d0d0] rounded-b-xl flex items-center justify-center text-xs font-bold text-gray-500 shadow-md">{t.bar}</div>
+                                    <div className="floor-plan-bar bg-[#f0f0f0] border-2 border-[#d0d0d0] rounded-b-xl flex items-center justify-center overflow-hidden whitespace-nowrap text-xs font-bold text-gray-500 shadow-md">{t.bar}</div>
                                 </div>
                                 
                                 {/* Terrace (Stone) */}
-                                <div className="w-[30%] h-full texture-stone relative">
+                                <div className="floor-plan-terrace h-full texture-stone">
                                     <div className="absolute inset-0 border-[6px] border-[#4c6a46] m-1 opacity-80"></div>
                                     <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#334d30] text-white text-[10px] px-3 py-1 rounded font-bold shadow-md z-10">{t.terrace}</div>
                                 </div>
@@ -495,13 +568,13 @@
 
                     {/* Bottom Prompt */}
                     <div className="px-4 pb-4">
-                        <div className="bg-white rounded-2xl shadow-soft p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-[#4CAF7D]/20 flex items-center justify-center text-[#2D5A3D]">
+                        <div className="home-prompt bg-white rounded-2xl shadow-soft p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 shrink-0 rounded-full bg-[#4CAF7D]/20 flex items-center justify-center text-[#2D5A3D]">
                                 <i className="fa-solid fa-utensils text-xl"></i>
                             </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-brand-textDark">{t.selectSeat}</h3>
-                                <p className="text-[11px] text-brand-textLight mt-0.5">{t.selectSeatDesc}</p>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="truncate font-bold text-brand-textDark">{t.selectSeat}</h3>
+                                <p className="line-clamp-2 text-[11px] leading-4 text-brand-textLight mt-0.5">{t.selectSeatDesc}</p>
                             </div>
                         </div>
                     </div>
@@ -591,9 +664,8 @@
         }
 
         // --- Order & Chat View ---
-        function OrderView({ menus, tables, storeInfo }) {
+        function OrderView({ menus, messages, setMessages }) {
             const { t, language } = useLocale();
-            const [msgs, setMsgs] = useState([{ sender: 'bot', text: t.greeting, cards: [] }]);
             const [input, setInput] = useState('');
             const [isSending, setIsSending] = useState(false);
             const endRef = useRef(null);
@@ -601,9 +673,14 @@
             const isAtBottomRef = useRef(true);
 
             useEffect(() => {
-                setMsgs([{ sender: 'bot', text: t.greeting, cards: [] }]);
-                setInput('');
-            }, [language]);
+                setMessages(previous => {
+                    if (previous.length === 0) return [{ sender: 'bot', text: t.greeting, cards: [], isGreeting: true }];
+                    if (previous.length === 1 && previous[0].isGreeting) {
+                        return [{ ...previous[0], text: t.greeting }];
+                    }
+                    return previous;
+                });
+            }, [language, t.greeting, setMessages]);
 
             // Track user scroll position; only auto-scroll when user is near the bottom
             useEffect(() => {
@@ -621,13 +698,13 @@
                 if (isAtBottomRef.current) {
                     endRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }
-            }, [msgs, isSending]);
+            }, [messages, isSending]);
 
             const handleSend = async (e) => {
                 e.preventDefault();
                 const query = input.trim();
                 if(!query || isSending) return;
-                setMsgs(prev => [...prev, { sender: 'user', text: query }]);
+                setMessages(prev => [...prev, { sender: 'user', text: query, cards: [] }]);
                 setInput('');
                 setIsSending(true);
                 
@@ -647,10 +724,10 @@
                         ? `\n\n${t.recommended}: ${recommendedMenus.map(m => m.name).join(', ')}`
                         : '';
 
-                    setMsgs(prev => [...prev, { sender: 'bot', text: `${data.reply}${recommendationText}`, cards: recommendedMenus }]);
+                    setMessages(prev => [...prev, { sender: 'bot', text: `${data.reply}${recommendationText}`, cards: recommendedMenus }]);
                 } catch(err) {
                     console.error('AI chat failed', err);
-                    setMsgs(prev => [...prev, { sender: 'bot', text: t.networkError, cards: [] }]);
+                    setMessages(prev => [...prev, { sender: 'bot', text: t.networkError, cards: [] }]);
                 } finally {
                     setIsSending(false);
                 }
@@ -665,7 +742,7 @@
 
                     <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 no-scrollbar chat-scrollable space-for-bottom bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]">
                         <div className="text-center text-xs text-gray-400 my-2">{t.today}</div>
-                        {msgs.map((m, i) => (
+                        {messages.map((m, i) => (
                             <div key={i} className={`flex max-w-[85%] ${m.sender==='user'?'self-end':'self-start'} animate-slide-up`}>
                                 {m.sender==='bot' && <div className="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center mr-2 shadow-sm mt-1 shrink-0"><i className="fa-solid fa-leaf text-xs"></i></div>}
                                 <div className={`px-4 py-3 text-[14px] leading-relaxed whitespace-pre-line ${m.sender==='user' ? 'chat-bubble-user' : 'chat-bubble-bot text-brand-textDark'}`}>
@@ -699,7 +776,6 @@
                     </div>
 
                     <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100 flex items-center gap-2 shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
-                        <button type="button" className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-brand-green"><i className="fa-solid fa-plus text-lg"></i></button>
                         <input value={input} onChange={e=>setInput(e.target.value)} type="text" className="flex-1 bg-brand-bg rounded-full px-4 py-2.5 outline-none text-sm focus:ring-2 focus:ring-brand-greenLight/50" placeholder={t.chatPlaceholder} />
                         <button type="submit" disabled={isSending} className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${input.trim() && !isSending ? 'bg-brand-green text-white' : 'bg-gray-200 text-gray-400'}`}>
                             <i className="fa-solid fa-arrow-up"></i>
@@ -710,7 +786,7 @@
         }
 
         // --- Menu View ---
-        function MenuView({ menus }) {
+        function MenuView({ menus, categories, selectedCategory, onCategoryChange }) {
             const { t, language } = useLocale();
             const handleOrder = async (menu) => {
                 if (appMode === 'web') {
@@ -738,14 +814,30 @@
                 }
             };
 
+            const availableCategories = Array.from(new Set([
+                ...(Array.isArray(categories) ? categories : []),
+                ...menus.map(menu => menu.category)
+            ].map(category => String(category || '').trim()).filter(Boolean)));
+            const normalizedSelectedCategory = selectedCategory.trim().toLocaleLowerCase();
+            const filtered = normalizedSelectedCategory
+                ? menus.filter(menu => String(menu.category || '').trim().toLocaleLowerCase() === normalizedSelectedCategory)
+                : menus;
             return (
                 <div className="flex-1 flex flex-col bg-brand-bg pb-20 relative">
                     <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100 flex items-center justify-between relative z-20">
                         <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-solid fa-utensils mr-2 text-brand-green"></i>{t.fullMenu}</h1>
                     </div>
+                    <div className="flex gap-2 px-4 pt-4 pb-3 overflow-x-auto no-scrollbar" role="tablist" aria-label={t.fullMenu}>
+                        <button type="button" role="tab" aria-selected={!normalizedSelectedCategory} onClick={() => onCategoryChange('')} className={`shrink-0 whitespace-nowrap px-3 py-2 rounded-full text-xs font-semibold ${!normalizedSelectedCategory ? 'bg-brand-green text-white' : 'bg-white text-brand-textDark'}`}>{t.allCategories}</button>
+                        {availableCategories.map(category => (
+                            <button type="button" role="tab" aria-selected={normalizedSelectedCategory === category.toLocaleLowerCase()} key={category} onClick={() => onCategoryChange(category)} className={`shrink-0 whitespace-nowrap px-3 py-2 rounded-full text-xs font-semibold ${normalizedSelectedCategory === category.toLocaleLowerCase() ? 'bg-brand-green text-white' : 'bg-white text-brand-textDark'}`}>
+                                {category}
+                            </button>
+                        ))}
+                    </div>
                     <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 no-scrollbar space-for-bottom">
-                        {menus.length === 0 && <div className="text-center text-brand-textLight mt-10 text-sm">{t.noMenus}</div>}
-                        {menus.map(m => (
+                        {filtered.length === 0 && <div className="text-center text-brand-textLight mt-10 text-sm">{t.noMenus}</div>}
+                        {filtered.map(m => (
                             <div key={m.id} className={`bg-white rounded-2xl p-4 shadow-soft border border-gray-100 flex gap-4 ${m.isSoldOut ? 'opacity-60 grayscale' : ''}`}>
                                 <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0 shadow-inner">
                                     {m.img && <img src={m.img} className="w-full h-full object-cover" />}
@@ -758,6 +850,7 @@
                                     <p className="text-[11px] text-gray-400 mb-2 line-clamp-2">{localized(m.desc, language)}</p>
                                     <div className="flex flex-wrap gap-1 mb-3">
                                         {m.tags.map((tag, index) => <span key={`${m.id}-${index}`} className="text-[9px] px-1.5 py-0.5 rounded bg-brand-greenLight/20 text-brand-green font-semibold">{localized(tag, language)}</span>)}
+                                        {m.category && <span className="text-[9px] px-1.5 py-0.5 rounded bg-brand-greenLight/20 text-brand-green font-semibold">{m.category}</span>}
                                     </div>
                                     <button 
                                         onClick={() => handleOrder(m)}
@@ -844,6 +937,29 @@
             );
         }
 
+        function RatingStars({ value, onChange }) {
+            const numericValue = Number(value) || 0;
+            const interactive = typeof onChange === 'function';
+            return (
+                <div className="flex items-center gap-1" aria-label={`${numericValue.toFixed(1)} / 5`}>
+                    {[1, 2, 3, 4, 5].map(star => {
+                        const fill = Math.max(0, Math.min(1, numericValue - (star - 1))) * 100;
+                        return (
+                            <span key={star} className="rating-star" aria-hidden={!interactive}>
+                                <span className="rating-star-base" aria-hidden="true">★</span>
+                                <span className="rating-star-fill" style={{ width: `${fill}%` }} aria-hidden="true">★</span>
+                                {interactive && <React.Fragment>
+                                    <button type="button" onClick={() => onChange(star - 0.5)} className="absolute inset-y-0 left-0 z-10 w-1/2" aria-label={`${star - 0.5} / 5`}></button>
+                                    <button type="button" onClick={() => onChange(star)} className="absolute inset-y-0 right-0 z-10 w-1/2" aria-label={`${star} / 5`}></button>
+                                </React.Fragment>}
+                            </span>
+                        );
+                    })}
+                    {interactive && <output className="ml-2 min-w-8 text-xs font-bold text-brand-gold">{numericValue.toFixed(1)}</output>}
+                </div>
+            );
+        }
+
         // --- Store Reviews View ---
         function ReviewsView() {
             const { t, language } = useLocale();
@@ -854,6 +970,7 @@
             const [saving, setSaving] = useState(false);
             const [error, setError] = useState('');
             const fileRef = useRef(null);
+            const reviewTextRef = useRef(null);
 
             const loadReviews = () => apiFetch('/api/reviews')
                 .then(data => { setReviews(data); setError(''); })
@@ -868,6 +985,12 @@
                 catch (err) { alert(t.imageError); event.target.value = ''; }
             };
 
+            const handleReviewText = event => {
+                setReviewText(event.target.value);
+                event.target.style.height = 'auto';
+                event.target.style.height = `${event.target.scrollHeight}px`;
+            };
+
             const submitReview = async event => {
                 event.preventDefault();
                 if (!reviewText.trim() || saving) return;
@@ -879,11 +1002,14 @@
                     });
                     setReviewText(''); setRating(5); setPhoto('');
                     if (fileRef.current) fileRef.current.value = '';
+                    if (reviewTextRef.current) reviewTextRef.current.style.height = '';
                     await loadReviews();
                     alert(t.reviewSaved);
                 } catch (err) {
                     console.error('Review save failed', err);
-                    alert(t.networkError);
+                    const message = err?.message || t.reviewSaveFailed;
+                    setError(message);
+                    alert(message);
                 } finally { setSaving(false); }
             };
 
@@ -896,23 +1022,25 @@
                         <form onSubmit={submitReview} className="bg-white rounded-2xl p-4 shadow-soft mb-5">
                             <h2 className="font-bold mb-4">{t.writeReview}</h2>
                             <label className="text-xs font-bold text-gray-500">{t.rating}</label>
-                            <div className="flex gap-2 my-2 mb-4">
-                                {[1,2,3,4,5].map(star => <button type="button" key={star} onClick={() => setRating(star)} className={`text-2xl ${star <= rating ? 'text-brand-gold' : 'text-gray-200'}`} aria-label={`${star}`}>★</button>)}
+                            <div className="my-2 mb-4">
+                                <RatingStars value={rating} onChange={setRating} />
                             </div>
                             <label className="text-xs font-bold text-gray-500">{t.reviewText}</label>
-                            <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} rows="4" maxLength="2000" required placeholder={t.reviewPlaceholder} className="w-full mt-2 mb-4 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:ring-2 focus:ring-brand-greenLight/40"></textarea>
+                            <textarea ref={reviewTextRef} value={reviewText} onChange={handleReviewText} rows="3" maxLength="2000" required placeholder={t.reviewPlaceholder} className="review-textarea w-full mt-2 mb-4 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:ring-2 focus:ring-brand-greenLight/40"></textarea>
                             <label className="text-xs font-bold text-gray-500">{t.reviewPhoto}</label>
                             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} className="block w-full text-xs mt-2 mb-3" />
+                            <p className="-mt-1 mb-3 text-[10px] text-gray-400">{t.reviewPhotoHint}</p>
                             {photo && <img src={photo} className="w-full h-36 object-cover rounded-xl mb-3" alt="" />}
-                            <button disabled={saving} className="w-full bg-brand-green text-white font-bold py-3 rounded-xl disabled:opacity-50">{t.submitReview}</button>
+                            <button type="submit" disabled={saving} className="w-full bg-brand-green text-white font-bold py-3 rounded-xl disabled:opacity-50">{t.submitReview}</button>
                         </form>
                         {error && <div className="text-center text-red-500 text-sm mb-3">{error}</div>}
                         {reviews.length === 0 && <div className="text-center text-brand-textLight py-8 text-sm">{t.noReviews}</div>}
                         <div className="flex flex-col gap-3">
                             {reviews.map(review => <article key={review.id} className="bg-white rounded-2xl p-4 shadow-soft">
-                                <div className="flex justify-between mb-3"><span className="text-brand-gold tracking-wide">{'★'.repeat(review.rating)}<span className="text-gray-200">{'★'.repeat(5-review.rating)}</span></span><time className="text-[10px] text-gray-400">{new Date(review.created_at).toLocaleDateString(language)}</time></div>
+                                <div className="flex justify-between items-center mb-3"><RatingStars value={review.rating} /><time className="text-[10px] text-gray-400">{new Date(review.created_at).toLocaleDateString(language)}</time></div>
                                 {review.image && <img src={review.image} className="w-full h-44 object-cover rounded-xl mb-3 cursor-pointer" onClick={() => window.showLightbox(review.image)} alt="" />}
                                 <p className="text-sm text-brand-textDark whitespace-pre-wrap">{review.review_text}</p>
+                                {review.reply && <div className="mt-3 rounded-2xl bg-brand-bg p-3 text-sm text-brand-textDark border border-brand-green/20"><strong>{t.replyLabel}: </strong>{review.reply}</div>}
                             </article>)}
                         </div>
                     </div>
@@ -931,6 +1059,9 @@
             const [showSettings, setShowSettings] = useState(false);
             const [language, setLanguage] = useState(() => localStorage.getItem('qmenu_language') || 'ko');
             const [loadError, setLoadError] = useState('');
+            const [storeCategories, setStoreCategories] = useState([]);
+            const [selectedCategory, setSelectedCategory] = useState('');
+            const [chatMessages, setChatMessages] = useState([]);
             const t = UI_TEXT[language] || UI_TEXT.ko;
 
             useEffect(() => {
@@ -941,14 +1072,19 @@
 
             useEffect(() => {
                 apiFetch('/api/store')
-                    .then(data => setStoreInfo(data))
+                    .then(data => {
+                        setStoreInfo(data);
+                        setStoreCategories(data.menu_categories || []);
+                    })
                     .catch(error => {
                         console.error('Store load failed', error);
                         setLoadError(error.message);
                     });
                      
                 apiFetch('/api/menus')
-                    .then(data => setMenus(data))
+                    .then(data => {
+                        setMenus(data);
+                    })
                     .catch(error => {
                         console.error('Menu load failed', error);
                         setLoadError(error.message);
@@ -965,7 +1101,8 @@
             // Demo fallback for web mode when no menus are returned (helps local static testing)
             useEffect(() => {
                 if (appMode === 'web' && menus.length === 0) {
-                    setMenus([{ id: 'demo_chicken', name: { ko: '데모 치킨', en: 'Demo Chicken', vi: 'Gà mẫu' }, desc: {ko: '바삭한 치킨', en: 'Crispy chicken', vi: 'Gà giòn'}, img: 'https://via.placeholder.com/420x280?text=Chicken', price: 15000, currency: 'KRW', tags: [], isSoldOut: false }]);
+                    const demoMenus = [{ id: 'demo_chicken', name: { ko: '데모 치킨', en: 'Demo Chicken', vi: 'Gà mẫu' }, desc: {ko: '바삭한 치킨', en: 'Crispy chicken', vi: 'Gà giòn'}, img: 'https://via.placeholder.com/420x280?text=Chicken', price: 15000, currency: 'KRW', tags: [], isSoldOut: false }];
+                    setMenus(demoMenus);
                 }
             }, [menus]);
 
@@ -982,8 +1119,8 @@
                     </button>
                     {activeTab === 'home' && <HomeView tables={tables} onSeatClick={setSelectedSeat} storeInfo={storeInfo} onShowStoreInfo={() => setShowStoreInfo(true)} />}
                     {activeTab === 'reservation' && <ActivityStatusView menus={menus} />}
-                    {activeTab === 'chat' && <OrderView menus={menus} tables={tables} storeInfo={storeInfo} />}
-                    {activeTab === 'menu' && <MenuView menus={menus} />}
+                    {activeTab === 'chat' && <OrderView menus={menus} messages={chatMessages} setMessages={setChatMessages} />}
+                    {activeTab === 'menu' && <MenuView menus={menus} categories={storeCategories} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} />}
                     {activeTab === 'reviews' && <ReviewsView />}
 
                     <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />

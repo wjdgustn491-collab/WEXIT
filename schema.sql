@@ -13,6 +13,7 @@ create table if not exists public.stores (
     description_en text,
     description_vi text,
     recommendation_keywords jsonb not null default '[]'::jsonb,
+    menu_categories jsonb not null default '[]'::jsonb,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
@@ -86,9 +87,12 @@ create table if not exists public.reservations (
 create table if not exists public.reviews (
     id uuid primary key default gen_random_uuid(),
     store_id uuid not null references public.stores(id) on delete cascade,
-    rating integer not null check (rating between 1 and 5),
+    rating numeric(2, 1) not null check (
+        rating between 0.5 and 5 and mod(rating * 2, 1) = 0
+    ),
     review_text text not null check (char_length(review_text) between 1 and 2000),
     image_data text,
+    reply text,
     customer_session_id text not null,
     created_at timestamptz not null default now()
 );
@@ -100,8 +104,16 @@ alter table public.stores add column if not exists hours_en text;
 alter table public.stores add column if not exists hours_vi text;
 alter table public.stores add column if not exists description_en text;
 alter table public.stores add column if not exists description_vi text;
+alter table public.stores add column if not exists menu_categories jsonb not null default '[]'::jsonb;
 alter table public.tables add column if not exists table_image text;
 alter table public.tables add column if not exists view_image text;
+alter table public.reviews add column if not exists reply text;
+alter table public.reviews drop constraint if exists reviews_rating_check;
+alter table public.reviews alter column rating type numeric(2, 1)
+    using rating::numeric;
+alter table public.reviews add constraint reviews_rating_check check (
+    rating between 0.5 and 5 and mod(rating * 2, 1) = 0
+);
 
 create index if not exists menus_store_id_idx
     on public.menus(store_id);

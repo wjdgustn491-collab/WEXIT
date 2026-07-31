@@ -36,7 +36,7 @@ TABLE_STATUSES = {"available", "soon", "reserved", "occupied"}
 ORDER_STATUSES = {"pending", "completed", "cancelled"}
 RESERVATION_STATUSES = {"reserved", "waiting", "accepted", "cancelled"}
 ACTIVE_RESERVATION_STATUSES = {"reserved", "waiting", "accepted"}
-MAX_IMAGE_BYTES = 2 * 1024 * 1024
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
 IMAGE_DATA_PATTERN = re.compile(
     r"^data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=\r\n]+)$",
     re.IGNORECASE,
@@ -82,7 +82,7 @@ def validate_image_value(value: Optional[str]) -> Optional[str]:
         encoded = re.sub(r"\s+", "", match.group(2))
         decoded_size = (len(encoded) * 3) // 4
         if decoded_size > MAX_IMAGE_BYTES:
-            raise ValueError("이미지는 2MB 이하여야 합니다.")
+            raise ValueError("이미지는 5MB 이하여야 합니다.")
     elif len(value) > 2048:
         raise ValueError("이미지 URL이 너무 깁니다.")
     return value
@@ -95,13 +95,30 @@ class StoreUpdate(BaseModel):
     name_en: str = Field(default="", max_length=120)
     hours_en: str = Field(default="", max_length=200)
     description_en: str = Field(default="", max_length=500)
+    name_vi: str = Field(default="", max_length=120)
+    hours_vi: str = Field(default="", max_length=200)
+    description_vi: str = Field(default="", max_length=500)
+    menu_categories: List[str] = Field(default_factory=list, max_length=50)
 
     @field_validator(
-        "name", "hours", "description", "name_en", "hours_en", "description_en"
+        "name",
+        "hours",
+        "description",
+        "name_en",
+        "hours_en",
+        "description_en",
+        "name_vi",
+        "hours_vi",
+        "description_vi",
+        "menu_categories",
     )
     @classmethod
-    def strip_text(cls, value: str) -> str:
-        return value.strip()
+    def strip_text(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return value.strip()
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        return value
 
 
 class MenuPayload(BaseModel):
@@ -109,6 +126,7 @@ class MenuPayload(BaseModel):
     price: float = Field(ge=0)
     currency: str = Field(min_length=1, max_length=8)
     desc: Dict[str, str]
+    category: str = Field(default="", max_length=100)
     tags: List[Dict[str, str]] = Field(default_factory=list, max_length=30)
     img: Optional[str] = None
     isSoldOut: bool = False
@@ -119,6 +137,11 @@ class MenuPayload(BaseModel):
         if not str(value.get("ko", "")).strip():
             raise ValueError("한국어 메뉴명과 설명은 비워 둘 수 없습니다.")
         return {str(key): str(text).strip() for key, text in value.items()}
+
+    @field_validator("category")
+    @classmethod
+    def normalize_category(cls, value: str) -> str:
+        return str(value or "").strip()
 
     @field_validator("currency")
     @classmethod
@@ -219,7 +242,7 @@ class ReservationStatusUpdate(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    rating: int = Field(ge=1, le=5)
+    rating: float = Field(ge=0.5, le=5, multiple_of=0.5)
     review_text: str = Field(min_length=1, max_length=2000)
     image: Optional[str] = None
     customer_session_id: UUID
@@ -236,6 +259,15 @@ class ReviewCreate(BaseModel):
     @classmethod
     def validate_review_image(cls, value: Optional[str]) -> Optional[str]:
         return validate_image_value(value)
+
+
+class ReviewReplyUpdate(BaseModel):
+    reply: str = Field(max_length=1000)
+
+    @field_validator("reply")
+    @classmethod
+    def strip_reply(cls, value: str) -> str:
+        return str(value or "").strip()
 
 
 class ChatRequest(BaseModel):
@@ -264,6 +296,7 @@ def menu_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
         "price": public_number(row.get("price", 0)),
         "currency": row.get("currency", "KRW"),
         "desc": row.get("description") or {},
+        "category": row.get("category") or "",
         "tags": row.get("tags") or [],
         "img": row.get("image_data") or row.get("image_url") or "",
         "isSoldOut": bool(row.get("is_sold_out", False)),
@@ -316,9 +349,10 @@ def reservation_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
 def review_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "id": str(row["id"]),
-        "rating": int(row["rating"]),
+        "rating": public_number(row["rating"]),
         "review_text": row["review_text"],
         "image": row.get("image_data") or "",
+        "reply": row.get("reply") or "",
         "customer_session_id": row["customer_session_id"],
         "created_at": row["created_at"],
     }
@@ -611,6 +645,24 @@ class SupabaseRepository:
             .execute(),
             "리뷰를 등록하지 못했습니다.",
         )
+        if not response.data:
+            raise HTTPException(
+                status_code=502,
+                detail="리뷰가 저장되었는지 확인하지 못했습니다.",
+            )
+        return response.data[0]
+
+    def update_review_reply(self, review_id: str, reply: str) -> Dict[str, Any]:
+        response = self._run(
+            lambda: self.client.table("reviews")
+            .update({"reply": reply})
+            .eq("store_id", self.store_id)
+            .eq("id", review_id)
+            .execute(),
+            "리뷰 답글을 저장하지 못했습니다.",
+        )
+        if not response.data:
+            raise HTTPException(status_code=404, detail="리뷰를 찾을 수 없습니다.")
         return response.data[0]
 
 
@@ -680,6 +732,7 @@ def menu_payload_to_row(payload: MenuPayload, include_image: bool) -> Dict[str, 
         "price": payload.price,
         "currency": payload.currency,
         "description": description,
+        "category": payload.category,
         "tags": tags,
         "is_sold_out": payload.isSoldOut,
     }
@@ -794,6 +847,7 @@ def store_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
         "name_en": row.get("name_en") or "",
         "hours_en": row.get("hours_en") or "",
         "description_en": row.get("description_en") or "",
+        "menu_categories": row.get("menu_categories") or [],
         "name_i18n": {
             "ko": row["name"],
             "en": row.get("name_en") or row["name"],
@@ -834,30 +888,18 @@ def get_store() -> Dict[str, Any]:
 
 @app.put("/api/store")
 def update_store(payload: StoreUpdate) -> Dict[str, Any]:
-    source = {
-        "name": payload.name,
-        "hours": payload.hours,
-        "description": payload.description,
-    }
-    generated = auto_translate_fields(
-        source,
-        strict=not all(
-            (payload.name_en, payload.hours_en, payload.description_en)
-        ),
-    )
     row = get_repository().update_store(
         {
             "name": payload.name,
             "hours": payload.hours,
             "description": payload.description,
-            "name_en": payload.name_en or generated["en"]["name"],
-            "hours_en": payload.hours_en or generated["en"]["hours"],
-            "description_en": (
-                payload.description_en or generated["en"]["description"]
-            ),
-            "name_vi": generated["vi"]["name"],
-            "hours_vi": generated["vi"]["hours"],
-            "description_vi": generated["vi"]["description"],
+            "name_en": payload.name_en or payload.name,
+            "hours_en": payload.hours_en or payload.hours,
+            "description_en": payload.description_en or payload.description,
+            "name_vi": payload.name_vi or payload.name,
+            "hours_vi": payload.hours_vi or payload.hours,
+            "description_vi": payload.description_vi or payload.description,
+            "menu_categories": payload.menu_categories,
         }
     )
     return {
@@ -1084,6 +1126,15 @@ def create_review(payload: ReviewCreate) -> Dict[str, Any]:
     return {
         "success": True,
         "message": "리뷰가 등록되었습니다.",
+        "review": review_to_public(row),
+    }
+
+@app.put("/api/reviews/{review_id}")
+def update_review(review_id: UUID, payload: ReviewReplyUpdate) -> Dict[str, Any]:
+    row = get_repository().update_review_reply(str(review_id), payload.reply)
+    return {
+        "success": True,
+        "message": "리뷰 답글이 저장되었습니다.",
         "review": review_to_public(row),
     }
 
