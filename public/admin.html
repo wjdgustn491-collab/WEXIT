@@ -46,15 +46,15 @@
         body { background-color: var(--bg-base); color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; transition: background-color var(--transition-fast), color var(--transition-fast); }
 
         /* 2. LAYOUT */
-        aside { width: var(--sidebar-width); background: rgba(15, 23, 42, 0.95); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; padding: 2rem 1.5rem; z-index: 10; transition: all var(--transition-fast); }
+        aside { width: var(--sidebar-width); min-width: var(--sidebar-width); max-width: var(--sidebar-width); flex: 0 0 var(--sidebar-width); background: rgba(15, 23, 42, 0.95); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; padding: 2rem 1.5rem; z-index: 10; transition: background var(--transition-fast); overflow: hidden; }
         .logo-area { display: flex; align-items: center; gap: 0.75rem; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.05em; background: var(--accent-gradient); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 3rem; }
         .logo-area i { -webkit-text-fill-color: initial; color: var(--accent-glow); }
         nav { display: flex; flex-direction: column; gap: 0.5rem; flex-grow: 1; }
-        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; }
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; white-space: nowrap; }
         .nav-item:hover { color: var(--text-primary); background: var(--bg-surface-hover); }
         .nav-item.active { color: var(--text-primary); background: var(--bg-surface-hover); border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 0 15px rgba(56, 189, 248, 0.05); position: relative; }
         .nav-item.active::before { content: ''; position: absolute; left: 0; top: 25%; height: 50%; width: 4px; background: var(--accent-glow); border-radius: 0 4px 4px 0; }
-        main { flex-grow: 1; padding: 2.5rem; overflow-y: auto; background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.3) 0%, transparent 70%); transition: background var(--transition-fast); }
+        main { flex: 1 1 auto; min-width: 0; padding: 2.5rem; overflow-y: auto; background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.3) 0%, transparent 70%); transition: background var(--transition-fast); }
         body.light-mode main { background: #f8fafc; }
 
         .view-panel { display: none; animation: fadeIn 0.4s ease-out forwards; }
@@ -71,7 +71,7 @@
         .metric-card .value { font-size: 1.75rem; font-weight: 700; }
 
         .dashboard-content { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
-        .dashboard-live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        .dashboard-live-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 1.5rem; }
         .card-container { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; margin-bottom: 2rem; transition: all var(--transition-fast); }
         .card-container h2 { font-size: 1.2rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
 
@@ -98,6 +98,7 @@
         .tag.selectable { cursor: pointer; opacity: 0.5; transition: all var(--transition-fast); border: 1px solid transparent; }
         .tag.selectable.selected { opacity: 1; border-color: var(--accent-glow); background: rgba(56, 189, 248, 0.25); box-shadow: 0 0 8px rgba(56, 189, 248, 0.2); }
         .menu-img-thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #333; }
+        .table-scroll { width: 100%; overflow-x: auto; }
 
         /* QR */
         .qr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
@@ -110,7 +111,7 @@
         .seat-layout-toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 1.25rem; }
         .seat-layout-workspace { display: grid; grid-template-columns: 1.4fr 0.8fr; gap: 1.25rem; align-items: start; }
         .seat-layout-canvas { position: relative; min-height: 520px; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; background: var(--bg-base); }
-        .seat-layout-canvas::before { content: '매장 평면도'; position: absolute; left: 1rem; top: 1rem; font-size: 0.85rem; color: var(--text-secondary); z-index: 4; }
+        .seat-layout-canvas::before { content: attr(data-label); position: absolute; left: 1rem; top: 1rem; font-size: 0.85rem; color: var(--text-secondary); z-index: 4; }
         .seat-floor-plan { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), radial-gradient(circle at top, rgba(56, 189, 248, 0.18), transparent 60%), var(--bg-base); background-size: 32px 32px, 32px 32px, auto, auto; }
         .seat-floor-indoor { position: absolute; left: 0; top: 0; width: 70%; height: 100%; background: linear-gradient(135deg, #b08d63, #8b6a43); border-right: 4px solid #a08466; }
         .seat-kitchen { position: absolute; top: 0; left: 0; width: 24%; height: 28%; background: #d8d8d8; border-right: 2px solid #b5b5b5; border-bottom: 2px solid #b5b5b5; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #6b7280; }
@@ -128,6 +129,11 @@
         .seat-layout-sidebar { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
         .seat-layout-hint { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
         .seat-layout-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); font-size: 0.95rem; }
+        .modal-backdrop { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.68); align-items: center; justify-content: center; padding: 1.5rem; }
+        .modal-backdrop.open { display: flex; }
+        .modal-card { width: min(680px, 100%); max-height: 92vh; overflow-y: auto; background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 18px; padding: 1.5rem; box-shadow: 0 24px 70px rgba(0,0,0,0.45); }
+        .image-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        .image-preview { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; background: var(--input-bg); display: none; }
         @media (max-width: 1100px) { .seat-layout-workspace { grid-template-columns: 1fr; } .seat-layout-canvas { min-height: 420px; } }
     </style>
 </head>
@@ -143,13 +149,13 @@
                     <i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_dashboard">대시보드</span>
                 </div>
                 <div class="nav-item" onclick="switchView('seat-layout', this)">
-                    <i class="fa-solid fa-chair"></i> <span>좌석 배치 관리</span>
+                    <i class="fa-solid fa-chair"></i> <span data-i18n="nav_seats">좌석 배치 관리</span>
                 </div>
                 <div class="nav-item" onclick="switchView('store-info', this)">
-                    <i class="fa-solid fa-store"></i> <span>매장 정보 관리</span>
+                    <i class="fa-solid fa-store"></i> <span data-i18n="nav_store">매장 정보 관리</span>
                 </div>
                 <div class="nav-item" onclick="switchView('menu-mgmt', this)">
-                    <i class="fa-solid fa-utensils"></i> <span data-i18n="nav_menu">메뉴 및 태그 관리</span>
+                    <i class="fa-solid fa-utensils"></i> <span data-i18n="nav_menu">메뉴 및 AI 태그 관리</span>
                 </div>
                 <div class="nav-item" onclick="switchView('qr-zone', this)">
                     <i class="fa-solid fa-qrcode"></i> <span data-i18n="nav_qr">라우팅 QR 시스템</span>
@@ -166,21 +172,12 @@
         <section id="dashboard" class="view-panel active">
             <header>
                 <h1 data-i18n="dash_title">스토어 관제 대시보드</h1>
-                <p data-i18n="dash_desc">실시간 매장 운영 상황 및 AI 매칭 실적을 모니터링합니다.</p>
+                <p data-i18n="dash_desc">실시간 주문 현황을 확인하고 처리합니다.</p>
             </header>
-            <div class="metrics-grid">
-                <div class="metric-card"><span class="title">오늘의 완료 매출</span><span class="value" id="sales-total">₩0</span></div>
-                <div class="metric-card"><span class="title">AI 추천 전환율</span><span class="value" style="color: var(--accent-glow);">데이터 없음</span></div>
-                <div class="metric-card"><span class="title">웨이팅 대기 팀</span><span class="value" id="wait-count" style="color: var(--accent-warning);">0팀</span></div>
-            </div>
             <div class="dashboard-live-grid">
                 <div class="card-container">
-                    <h2 style="margin-bottom: 1rem;"><i class="fa-solid fa-list-check"></i> 실시간 주문 현황</h2>
+                    <h2 style="margin-bottom: 1rem;"><i class="fa-solid fa-list-check"></i> <span data-i18n="live_orders">실시간 주문 현황</span></h2>
                     <div id="orders-list"></div>
-                </div>
-                <div class="card-container">
-                    <h2 style="margin-bottom: 1rem;"><i class="fa-solid fa-calendar-check"></i> 실시간 예약 관리</h2>
-                    <div id="reservations-list"></div>
                 </div>
             </div>
         </section>
@@ -188,24 +185,36 @@
         <!-- 매장 정보 관리 뷰 -->
         <section id="store-info" class="view-panel">
             <header>
-                <h1>매장 정보 관리</h1>
-                <p>앱 상단에 표시되는 매장 이름과 운영시간 등의 정보를 관리합니다.</p>
+                <h1 data-i18n="store_title">매장 정보 관리</h1>
+                <p data-i18n="store_desc">앱 상단에 표시되는 매장 이름과 운영시간 등의 정보를 관리합니다.</p>
             </header>
             <div class="card-container" style="max-width: 600px;">
                 <form onsubmit="saveStoreInfo(event)">
                     <div class="form-group">
-                        <label>매장 이름</label>
+                        <label data-i18n="store_name_ko">매장 이름 (한국어)</label>
                         <input type="text" id="si-name" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>운영 시간 및 휴무일</label>
+                        <label data-i18n="store_name_en">Store Name (English, auto-translated if blank)</label>
+                        <input type="text" id="si-name-en" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="store_hours_ko">운영 시간 및 휴무일 (한국어)</label>
                         <input type="text" id="si-hours" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>매장 설명 (부가 정보)</label>
+                        <label data-i18n="store_hours_en">Hours (English, auto-translated if blank)</label>
+                        <input type="text" id="si-hours-en" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="store_description_ko">매장 설명 (한국어)</label>
                         <input type="text" id="si-desc" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn">저장하기</button>
+                    <div class="form-group">
+                        <label data-i18n="store_description_en">Description (English, auto-translated if blank)</label>
+                        <input type="text" id="si-desc-en" class="form-control">
+                    </div>
+                    <button type="submit" class="btn" data-i18n="save">저장하기</button>
                 </form>
             </div>
         </section>
@@ -224,7 +233,8 @@
                             <label data-i18n="lbl_img">메뉴 사진</label>
                             <input type="file" id="in-image" class="form-control" accept="image/*">
                         </div>
-                        <div class="form-group"><label data-i18n="lbl_name">메뉴명</label><input type="text" id="in-name" class="form-control" required></div>
+                        <div class="form-group"><label data-i18n="lbl_name">메뉴명 (한국어)</label><input type="text" id="in-name" class="form-control" required></div>
+                        <div class="form-group"><label data-i18n="lbl_name_en">Menu Name (English, auto-translated if blank)</label><input type="text" id="in-name-en" class="form-control"></div>
                         <div class="form-group">
                             <label data-i18n="lbl_price">가격</label>
                             <div style="display: flex; gap: 0.5rem;">
@@ -235,14 +245,15 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group"><label data-i18n="lbl_desc">메뉴 설명</label><textarea id="in-desc" class="form-control" rows="2"></textarea></div>
+                        <div class="form-group"><label data-i18n="lbl_desc">메뉴 설명 (한국어)</label><textarea id="in-desc" class="form-control" rows="2" required></textarea></div>
+                        <div class="form-group"><label data-i18n="lbl_desc_en">Description (English, auto-translated if blank)</label><textarea id="in-desc-en" class="form-control" rows="2"></textarea></div>
                         <div class="form-group">
                             <label data-i18n="lbl_tags">추천 키워드 선택</label>
                             <div id="keyword-selector" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button type="submit" id="submit-btn" class="btn" data-i18n="btn_submit">메뉴 등록하기</button>
-                            <button type="button" id="cancel-btn" class="btn" style="display: none; background: #64748b;" onclick="cancelEdit()">취소</button>
+                            <button type="button" id="cancel-btn" class="btn" style="display: none; background: #64748b;" onclick="cancelEdit()" data-i18n="cancel">취소</button>
                         </div>
                     </form>
                 </div>
@@ -252,14 +263,14 @@
                         <button class="btn" style="width: auto; padding: 0.4rem 1rem; background: #ef4444;" onclick="deleteSelected()" data-i18n="btn_delete">선택 삭제</button>
                     </div>
                     <div class="card-container" style="padding: 1rem; margin-bottom: 1rem;">
-                        <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">추천 키워드 관리</h3>
+                        <h3 style="margin-bottom: 0.75rem; font-size: 1rem;" data-i18n="keyword_manage">추천 키워드 관리</h3>
                         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
-                            <input type="text" id="keyword-input" class="form-control" placeholder="예: #혼밥" style="flex: 1;">
-                            <button type="button" class="btn" style="width: auto; padding: 0.6rem 1rem;" onclick="addKeyword()">추가</button>
+                            <input type="text" id="keyword-input" class="form-control" placeholder="예: #혼밥" data-i18n-placeholder="keyword_placeholder" style="flex: 1;">
+                            <button type="button" class="btn" style="width: auto; padding: 0.6rem 1rem;" onclick="addKeyword()" data-i18n="add">추가</button>
                         </div>
                         <div id="keyword-manager-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
                     </div>
-                    <table class="menu-table">
+                    <div class="table-scroll"><table class="menu-table">
                         <thead><tr>
                             <th><input type="checkbox" onclick="toggleAll(this)"></th>
                             <th data-i18n="th_img">사진</th>
@@ -270,7 +281,7 @@
                             <th data-i18n="th_status">상태</th>
                         </tr></thead>
                         <tbody id="menu-body"></tbody>
-                    </table>
+                    </table></div>
                 </div>
             </div>
         </section>
@@ -278,51 +289,22 @@
         <!-- 좌석 배치 관리 뷰 -->
         <section id="seat-layout" class="view-panel">
             <header>
-                <h1>좌석 배치 관리</h1>
-                <p>앱에서 보이는 자리 배치를 이미지처럼 편집하고 드래그해서 위치를 바꿀 수 있습니다.</p>
+                <h1 data-i18n="seats_title">좌석 배치 관리</h1>
+                <p data-i18n="seats_desc">좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.</p>
             </header>
             <div class="card-container">
                 <div class="seat-layout-toolbar">
-                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem;" onclick="saveSeatLayout()">저장하기</button>
-                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#64748b;" onclick="resetSeatLayout()">기본값 복원</button>
-                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#0f766e;" onclick="addSeat()">+ 새 좌석 추가</button>
-                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#ef4444;" onclick="deleteSelectedSeat()">선택 좌석 삭제</button>
-                    <span style="color: var(--text-secondary); font-size:0.95rem;">* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.</span>
+                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem;" onclick="saveSeatLayout()" data-i18n="save">저장하기</button>
+                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#64748b;" onclick="resetSeatLayout()" data-i18n="reset_seats">기본값 복원</button>
+                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#0f766e;" onclick="addSeat()" data-i18n="add_seat">+ 새 좌석 추가</button>
+                    <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#ef4444;" onclick="deleteSelectedSeat()" data-i18n="delete_seat">선택 좌석 삭제</button>
+                    <span style="color: var(--text-secondary); font-size:0.95rem;" data-i18n="seats_hint">* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.</span>
                 </div>
                 <div class="seat-layout-workspace">
                     <div id="seat-layout-canvas" class="seat-layout-canvas"></div>
                     <div class="seat-layout-sidebar">
-                        <div class="seat-layout-hint">드래그해서 좌석 위치를 바꾸고, 오른쪽 폼에서 상태와 정보를 수정하세요.</div>
-                        <div id="seat-editor-index" class="seat-layout-hint" style="font-weight:600; color:var(--text-primary);"></div>
-                        <div class="form-group">
-                            <label>테이블 이름</label>
-                            <input type="text" id="seat-id-input" class="form-control" onchange="applySeatEditorValues()">
-                        </div>
-                        <div class="form-group">
-                            <label>상태</label>
-                            <select id="seat-status-input" class="form-control" onchange="applySeatEditorValues()">
-                                <option value="available">available</option>
-                                <option value="soon">soon</option>
-                                <option value="reserved">reserved</option>
-                                <option value="occupied">occupied</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>뷰</label>
-                            <input type="text" id="seat-view-input" class="form-control" onchange="applySeatEditorValues()">
-                        </div>
-                        <div class="form-group">
-                            <label>태그</label>
-                            <input type="text" id="seat-tag-input" class="form-control" onchange="applySeatEditorValues()">
-                        </div>
-                        <div class="form-group">
-                            <label>X 위치 (%)</label>
-                            <input type="number" id="seat-x-input" class="form-control" min="0" max="100" onchange="applySeatEditorValues()">
-                        </div>
-                        <div class="form-group">
-                            <label>Y 위치 (%)</label>
-                            <input type="number" id="seat-y-input" class="form-control" min="0" max="100" onchange="applySeatEditorValues()">
-                        </div>
+                        <h2><i class="fa-solid fa-list-check"></i> <span data-i18n="live_orders">실시간 주문 현황</span></h2>
+                        <div id="seat-orders-list"></div>
                     </div>
                 </div>
             </div>
@@ -336,18 +318,18 @@
             </header>
             <div class="qr-grid">
                 <div class="card-container qr-card">
-                    <h3>인터넷 배포용 (메뉴 탐색 전용)</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary);">주문 및 예약 기능이 비활성화되며, AI와 메뉴 추천 대화만 가능합니다.</p>
+                    <h3 data-i18n="qr_external">인터넷 배포용 (메뉴 탐색 전용)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);" data-i18n="qr_external_desc">주문 및 예약 기능이 비활성화되며, AI와 메뉴 추천 대화만 가능합니다.</p>
                     <div class="qr-box" id="q-ext"></div>
                     <div class="url-display" id="url-ext"></div>
-                    <button type="button" class="btn" style="width:auto; padding:0.5rem 1rem;" onclick="copyQrUrl('url-ext')">URL 복사</button>
+                    <button type="button" class="btn" style="width:auto; padding:0.5rem 1rem;" onclick="copyQrUrl('url-ext')" data-i18n="copy_url">URL 복사</button>
                 </div>
                 <div class="card-container qr-card">
-                    <h3>가게 전용 (테이블 오더용)</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary);">좌석 실시간 예약 및 AI 오더 주문 처리가 가능한 권한이 부여됩니다.</p>
+                    <h3 data-i18n="qr_internal">가게 전용 (테이블 오더용)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);" data-i18n="qr_internal_desc">좌석 실시간 예약 및 AI 오더 주문 처리가 가능한 권한이 부여됩니다.</p>
                     <div class="qr-box" id="q-int"></div>
                     <div class="url-display" id="url-int"></div>
-                    <button type="button" class="btn" style="width:auto; padding:0.5rem 1rem;" onclick="copyQrUrl('url-int')">URL 복사</button>
+                    <button type="button" class="btn" style="width:auto; padding:0.5rem 1rem;" onclick="copyQrUrl('url-int')" data-i18n="copy_url">URL 복사</button>
                 </div>
             </div>
         </section>
@@ -356,7 +338,7 @@
         <section id="settings" class="view-panel">
             <header>
                 <h1 data-i18n="set_title">설정</h1>
-                <p data-i18n="set_desc">다크 모드 등 기타 환경 설정을 변경합니다.</p>
+                <p data-i18n="set_desc">관리자 화면의 언어와 테마를 변경합니다.</p>
             </header>
             <div class="card-container" style="max-width: 600px;">
                 <div class="form-group">
@@ -364,15 +346,101 @@
                     <label class="toggle-switch">
                         <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)">
                         <span class="slider"></span>
-                        <span id="theme-label" style="margin-left: 0.5rem; font-size: 0.9rem;">라이트 모드 켜기</span>
+                        <span id="theme-label" style="margin-left: 0.5rem; font-size: 0.9rem;" data-i18n="theme_label">라이트 모드 켜기</span>
                     </label>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="admin_language">관리자 언어</label>
+                    <select id="admin-language" class="form-control" onchange="setAdminLanguage(this.value)">
+                        <option value="ko">한국어</option>
+                        <option value="en">English</option>
+                        <option value="vi">Tiếng Việt</option>
+                    </select>
                 </div>
             </div>
         </section>
     </main>
 
+    <div id="seat-modal" class="modal-backdrop" onclick="closeSeatModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                <h2><i class="fa-solid fa-chair"></i> <span data-i18n="edit_table">테이블 상세 설정</span></h2>
+                <button type="button" class="btn" style="width:auto; padding:0.4rem 0.75rem; background:#64748b;" onclick="closeSeatModal()">×</button>
+            </div>
+            <div class="form-group"><label data-i18n="table_name">테이블 이름</label><input type="text" id="seat-id-input" class="form-control"></div>
+            <div class="form-group">
+                <label data-i18n="status">상태</label>
+                <select id="seat-status-input" class="form-control">
+                    <option value="available">available</option><option value="soon">soon</option><option value="reserved">reserved</option><option value="occupied">occupied</option>
+                </select>
+            </div>
+            <div class="form-group"><label data-i18n="view">뷰</label><input type="text" id="seat-view-input" class="form-control"></div>
+            <div class="form-group"><label data-i18n="tag">태그</label><input type="text" id="seat-tag-input" class="form-control"></div>
+            <div class="form-group"><label data-i18n="capacity">최대 인원</label><input type="number" id="seat-capacity-input" class="form-control" min="1" max="50"></div>
+            <div class="image-preview-grid">
+                <div><label data-i18n="table_photo">테이블 사진</label><input type="file" id="seat-table-image-input" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewSeatImage(this, 'table')"><img id="seat-table-image-preview" class="image-preview" alt=""></div>
+                <div><label data-i18n="view_photo">뷰 사진</label><input type="file" id="seat-view-image-input" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewSeatImage(this, 'view')"><img id="seat-view-image-preview" class="image-preview" alt=""></div>
+            </div>
+            <div style="display:flex; gap:0.75rem;">
+                <button type="button" class="btn" onclick="applySeatEditorValues()" data-i18n="apply">적용</button>
+                <button type="button" class="btn" style="background:#64748b;" onclick="closeSeatModal()" data-i18n="cancel">취소</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = '';
+        const ADMIN_TEXT = {
+            ko: {
+                nav_dashboard:'대시보드', nav_seats:'좌석 배치 관리', nav_store:'매장 정보 관리', nav_menu:'메뉴 및 AI 태그 관리', nav_qr:'라우팅 QR 시스템', nav_settings:'설정',
+                dash_title:'스토어 관제 대시보드', dash_desc:'실시간 주문 현황을 확인하고 처리합니다.', live_orders:'실시간 주문 현황',
+                store_title:'매장 정보 관리', store_desc:'앱 상단에 표시되는 매장 이름과 운영시간 등의 정보를 관리합니다.', store_name_ko:'매장 이름 (한국어)', store_name_en:'매장 이름 (영어, 비워두면 자동 번역)', store_hours_ko:'운영 시간 및 휴무일 (한국어)', store_hours_en:'운영 시간 (영어, 비워두면 자동 번역)', store_description_ko:'매장 설명 (한국어)', store_description_en:'매장 설명 (영어, 비워두면 자동 번역)', save:'저장하기',
+                menu_title:'메뉴 및 AI 태그 관리', menu_desc:'메뉴 설명과 핵심 키워드를 AI 추천 엔진에 반영합니다.', menu_add:'메뉴 등록', lbl_img:'메뉴 사진', lbl_name:'메뉴명 (한국어)', lbl_name_en:'메뉴명 (영어, 비워두면 자동 번역)', lbl_price:'가격', lbl_desc:'메뉴 설명 (한국어)', lbl_desc_en:'메뉴 설명 (영어, 비워두면 자동 번역)', lbl_tags:'추천 키워드 선택', btn_submit:'메뉴 등록하기', cancel:'취소', menu_list:'등록된 메뉴', btn_delete:'선택 삭제', keyword_manage:'추천 키워드 관리', keyword_placeholder:'예: #혼밥', add:'추가', th_img:'사진', th_name:'메뉴', th_price:'가격', th_desc:'설명', th_tags:'키워드', th_status:'상태',
+                seats_title:'좌석 배치 관리', seats_desc:'좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.', reset_seats:'기본값 복원', add_seat:'+ 새 좌석 추가', delete_seat:'선택 좌석 삭제', seats_hint:'* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.', edit_table:'테이블 상세 설정', table_name:'테이블 이름', status:'상태', view:'뷰', tag:'태그', capacity:'최대 인원', table_photo:'테이블 사진', view_photo:'뷰 사진', apply:'적용',
+                qr_title:'라우팅 QR 시스템', qr_desc:'외부 배포용과 내부 매장용 QR을 분리하여 발급합니다.', qr_external:'인터넷 배포용 (메뉴 탐색 전용)', qr_external_desc:'주문 및 예약 기능이 비활성화되며, AI와 메뉴 추천 대화만 가능합니다.', qr_internal:'가게 전용 (테이블 오더용)', qr_internal_desc:'좌석 실시간 예약 및 AI 오더 주문 처리가 가능합니다.', copy_url:'URL 복사',
+                set_title:'설정', set_desc:'관리자 화면의 언어와 테마를 변경합니다.', set_theme:'다크 모드 / 라이트 모드', theme_label:'라이트 모드 켜기', admin_language:'관리자 언어',
+                no_orders:'현재 들어온 주문이 없습니다.', table:'테이블', order_time:'주문 시간', quantity:'수량', total:'총 금액', complete_order:'조리 완료', completed:'완료됨', edit:'수정', resume:'판매 재개', mark_soldout:'품절 처리', no_image:'사진 없음', selected:'선택됨', no_seats:'좌석이 없습니다. 새 좌석을 추가해 보세요.', floor_plan:'매장 평면도', kitchen:'주방', restroom:'화장실', bar:'바 / 카운터', terrace:'테라스'
+            },
+            en: {
+                nav_dashboard:'Dashboard', nav_seats:'Seating Layout', nav_store:'Store Information', nav_menu:'Menu & AI Tags', nav_qr:'Routing QR System', nav_settings:'Settings',
+                dash_title:'Store Operations Dashboard', dash_desc:'View and process orders in real time.', live_orders:'Live Orders',
+                store_title:'Store Information', store_desc:'Manage the store name, hours, and description shown in the app.', store_name_ko:'Store Name (Korean)', store_name_en:'Store Name (English, auto-translated if blank)', store_hours_ko:'Hours & Holidays (Korean)', store_hours_en:'Hours (English, auto-translated if blank)', store_description_ko:'Description (Korean)', store_description_en:'Description (English, auto-translated if blank)', save:'Save',
+                menu_title:'Menu & AI Tag Management', menu_desc:'Apply menu descriptions and keywords to AI recommendations.', menu_add:'Add Menu', lbl_img:'Menu Photo', lbl_name:'Menu Name (Korean)', lbl_name_en:'Menu Name (English, auto-translated if blank)', lbl_price:'Price', lbl_desc:'Description (Korean)', lbl_desc_en:'Description (English, auto-translated if blank)', lbl_tags:'Recommendation Keywords', btn_submit:'Add Menu', cancel:'Cancel', menu_list:'Registered Menus', btn_delete:'Delete Selected', keyword_manage:'Keyword Management', keyword_placeholder:'e.g. #solo-dining', add:'Add', th_img:'Photo', th_name:'Menu', th_price:'Price', th_desc:'Description', th_tags:'Keywords', th_status:'Status',
+                seats_title:'Seating Layout', seats_desc:'Drag tables to arrange them and click a table to edit details.', reset_seats:'Restore Defaults', add_seat:'+ Add Table', delete_seat:'Delete Selected', seats_hint:'* Save and refresh the customer app to apply changes.', edit_table:'Table Details', table_name:'Table Name', status:'Status', view:'View', tag:'Tag', capacity:'Capacity', table_photo:'Table Photo', view_photo:'View Photo', apply:'Apply',
+                qr_title:'Routing QR System', qr_desc:'Issue separate QR codes for public and in-store use.', qr_external:'Public (Menu Browsing)', qr_external_desc:'Ordering and reservations are disabled; AI menu chat remains available.', qr_internal:'In-store (Table Ordering)', qr_internal_desc:'Enables live reservations and AI-assisted ordering.', copy_url:'Copy URL',
+                set_title:'Settings', set_desc:'Change the admin language and theme.', set_theme:'Dark / Light Mode', theme_label:'Turn on light mode', admin_language:'Admin Language',
+                no_orders:'There are no incoming orders.', table:'Table', order_time:'Order time', quantity:'Qty', total:'Total', complete_order:'Complete', completed:'Completed', edit:'Edit', resume:'Resume Sales', mark_soldout:'Mark Sold Out', no_image:'No Image', selected:'selected', no_seats:'No tables. Add a new table.', floor_plan:'Store Floor Plan', kitchen:'Kitchen', restroom:'Restroom', bar:'Bar / Counter', terrace:'Terrace'
+            },
+            vi: {
+                nav_dashboard:'Bảng điều khiển', nav_seats:'Quản lý sơ đồ bàn', nav_store:'Thông tin cửa hàng', nav_menu:'Thực đơn & thẻ AI', nav_qr:'Hệ thống QR', nav_settings:'Cài đặt',
+                dash_title:'Bảng điều khiển cửa hàng', dash_desc:'Xem và xử lý đơn hàng theo thời gian thực.', live_orders:'Đơn hàng trực tiếp',
+                store_title:'Thông tin cửa hàng', store_desc:'Quản lý tên, giờ mở cửa và mô tả hiển thị trong ứng dụng.', store_name_ko:'Tên cửa hàng (Tiếng Hàn)', store_name_en:'Tên cửa hàng (Tiếng Anh, tự dịch nếu để trống)', store_hours_ko:'Giờ & ngày nghỉ (Tiếng Hàn)', store_hours_en:'Giờ mở cửa (Tiếng Anh, tự dịch nếu để trống)', store_description_ko:'Mô tả (Tiếng Hàn)', store_description_en:'Mô tả (Tiếng Anh, tự dịch nếu để trống)', save:'Lưu',
+                menu_title:'Quản lý thực đơn & thẻ AI', menu_desc:'Áp dụng mô tả và từ khóa vào gợi ý AI.', menu_add:'Thêm món', lbl_img:'Ảnh món', lbl_name:'Tên món (Tiếng Hàn)', lbl_name_en:'Tên món (Tiếng Anh, tự dịch nếu để trống)', lbl_price:'Giá', lbl_desc:'Mô tả (Tiếng Hàn)', lbl_desc_en:'Mô tả (Tiếng Anh, tự dịch nếu để trống)', lbl_tags:'Từ khóa gợi ý', btn_submit:'Thêm món', cancel:'Hủy', menu_list:'Món đã đăng ký', btn_delete:'Xóa mục đã chọn', keyword_manage:'Quản lý từ khóa', keyword_placeholder:'VD: #ăn-một-mình', add:'Thêm', th_img:'Ảnh', th_name:'Món', th_price:'Giá', th_desc:'Mô tả', th_tags:'Từ khóa', th_status:'Trạng thái',
+                seats_title:'Quản lý sơ đồ bàn', seats_desc:'Kéo bàn để sắp xếp và nhấp vào bàn để sửa chi tiết.', reset_seats:'Khôi phục mặc định', add_seat:'+ Thêm bàn', delete_seat:'Xóa bàn đã chọn', seats_hint:'* Lưu và làm mới ứng dụng khách để áp dụng.', edit_table:'Chi tiết bàn', table_name:'Tên bàn', status:'Trạng thái', view:'Khung cảnh', tag:'Thẻ', capacity:'Sức chứa', table_photo:'Ảnh bàn', view_photo:'Ảnh khung cảnh', apply:'Áp dụng',
+                qr_title:'Hệ thống QR định tuyến', qr_desc:'Tạo mã QR riêng cho công khai và tại cửa hàng.', qr_external:'Công khai (Xem thực đơn)', qr_external_desc:'Tắt đặt món và đặt bàn; vẫn dùng được chat AI.', qr_internal:'Tại cửa hàng (Đặt món)', qr_internal_desc:'Cho phép đặt bàn trực tiếp và đặt món với AI.', copy_url:'Sao chép URL',
+                set_title:'Cài đặt', set_desc:'Thay đổi ngôn ngữ và giao diện quản trị.', set_theme:'Chế độ tối / sáng', theme_label:'Bật chế độ sáng', admin_language:'Ngôn ngữ quản trị',
+                no_orders:'Hiện không có đơn hàng.', table:'Bàn', order_time:'Thời gian', quantity:'Số lượng', total:'Tổng', complete_order:'Hoàn tất', completed:'Đã hoàn tất', edit:'Sửa', resume:'Bán lại', mark_soldout:'Đánh dấu hết món', no_image:'Không có ảnh', selected:'đã chọn', no_seats:'Chưa có bàn. Hãy thêm bàn mới.', floor_plan:'Sơ đồ cửa hàng', kitchen:'Bếp', restroom:'Nhà vệ sinh', bar:'Quầy bar', terrace:'Sân hiên'
+            }
+        };
+        let adminLanguage = localStorage.getItem('qmenu_admin_language') || 'ko';
+        function tr(key) { return (ADMIN_TEXT[adminLanguage] || ADMIN_TEXT.ko)[key] || ADMIN_TEXT.ko[key] || key; }
+        function adminMessage(ko, en, vi) { return adminLanguage === 'vi' ? vi : adminLanguage === 'en' ? en : ko; }
+        function applyAdminTranslations() {
+            document.documentElement.lang = adminLanguage;
+            document.title = `Q-menu Admin | ${tr('nav_dashboard')}`;
+            document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); });
+            const languageSelect = document.getElementById('admin-language');
+            if (languageSelect) languageSelect.value = adminLanguage;
+        }
+        function setAdminLanguage(language) {
+            adminLanguage = ['ko','en','vi'].includes(language) ? language : 'ko';
+            localStorage.setItem('qmenu_admin_language', adminLanguage);
+            applyAdminTranslations();
+            renderMenu(); renderSeatLayoutEditor(); renderOrders();
+            const submitButton = document.getElementById('submit-btn');
+            if (submitButton) submitButton.textContent = editMenuId ? tr('save') : tr('btn_submit');
+        }
         const defaultSeatLayout = [
             { id: 'T1', x: 12, y: 35, status: 'available', view: '창가', tag: '창가' },
             { id: 'T2', x: 28, y: 35, status: 'occupied', view: '창가', tag: '창가' },
@@ -395,12 +463,15 @@
         let recommendationKeywords = ['#스트레스', '#해장', '#혼밥', '#가성비', '#회식', '#매운맛', '#달콤한', '#국물'];
         let selectedSeatIndex = -1;
         let draggingSeatIndex = -1;
+        let seatWasDragged = false;
+        let pendingTableImage = '';
+        let pendingViewImage = '';
 
         async function apiFetch(path, options = {}) {
             const response = await fetch(`${API_URL}${path}`, options);
             const data = await response.json().catch(() => null);
             if (!response.ok) {
-                throw new Error(data?.detail || data?.message || `요청 실패 (${response.status})`);
+                throw new Error(data?.detail || data?.message || `Request failed (${response.status})`);
             }
             return data;
         }
@@ -422,32 +493,30 @@
         function renderSeatLayoutEditor() {
             const layout = getSeatLayout();
             const canvas = document.getElementById('seat-layout-canvas');
-            const editorIndex = document.getElementById('seat-editor-index');
             if (!canvas) return;
+            canvas.dataset.label = tr('floor_plan');
 
             if (selectedSeatIndex < 0 && layout.length > 0) {
                 selectedSeatIndex = 0;
             }
 
             if (layout.length === 0) {
-                canvas.innerHTML = '<div class="seat-layout-empty">좌석이 없습니다. 새 좌석을 추가해 보세요.</div>';
-                if (editorIndex) editorIndex.innerText = '선택된 좌석이 없습니다.';
-                clearSeatEditor();
+                canvas.innerHTML = `<div class="seat-layout-empty">${tr('no_seats')}</div>`;
                 return;
             }
 
             canvas.innerHTML = `
                 <div class="seat-floor-plan">
                     <div class="seat-floor-indoor">
-                        <div class="seat-kitchen">주방</div>
+                        <div class="seat-kitchen">${tr('kitchen')}</div>
                         <div class="seat-restroom">
-                            화장실
+                            ${tr('restroom')}
                             <div style="display:flex; gap:0.2rem; margin-top:0.2rem;"><i class="fa-solid fa-person"></i><i class="fa-solid fa-person-dress"></i></div>
                         </div>
-                        <div class="seat-bar">바 / 카운터</div>
+                        <div class="seat-bar">${tr('bar')}</div>
                     </div>
                     <div class="seat-floor-terrace">
-                        <div class="seat-terrace-label">테라스</div>
+                        <div class="seat-terrace-label">${tr('terrace')}</div>
                     </div>
                     ${layout.map((seat, idx) => `
                         <button class="seat-node ${idx === selectedSeatIndex ? 'selected' : ''}" data-index="${idx}" data-status="${seat.status}" style="left:${seat.x}%; top:${seat.y}%">
@@ -460,19 +529,13 @@
             canvas.querySelectorAll('.seat-node').forEach(node => {
                 node.addEventListener('click', (event) => {
                     event.stopPropagation();
-                    selectSeat(parseInt(node.dataset.index, 10));
+                    const index = parseInt(node.dataset.index, 10);
+                    selectSeat(index);
+                    if (!seatWasDragged) openSeatModal(index);
                 });
                 node.addEventListener('pointerdown', handleSeatPointerDown);
             });
 
-            if (editorIndex) {
-                editorIndex.innerText = selectedSeatIndex >= 0 ? `${layout[selectedSeatIndex].id} 선택됨` : '좌석을 선택해 주세요.';
-            }
-            if (selectedSeatIndex >= 0 && layout[selectedSeatIndex]) {
-                populateSeatEditor(layout[selectedSeatIndex]);
-            } else {
-                clearSeatEditor();
-            }
         }
 
         function clearSeatEditor() {
@@ -480,14 +543,12 @@
             const statusInput = document.getElementById('seat-status-input');
             const viewInput = document.getElementById('seat-view-input');
             const tagInput = document.getElementById('seat-tag-input');
-            const xInput = document.getElementById('seat-x-input');
-            const yInput = document.getElementById('seat-y-input');
+            const capacityInput = document.getElementById('seat-capacity-input');
             if (idInput) idInput.value = '';
             if (statusInput) statusInput.value = 'available';
             if (viewInput) viewInput.value = '';
             if (tagInput) tagInput.value = '';
-            if (xInput) xInput.value = '';
-            if (yInput) yInput.value = '';
+            if (capacityInput) capacityInput.value = '4';
         }
 
         function populateSeatEditor(seat) {
@@ -495,32 +556,23 @@
             const statusInput = document.getElementById('seat-status-input');
             const viewInput = document.getElementById('seat-view-input');
             const tagInput = document.getElementById('seat-tag-input');
-            const xInput = document.getElementById('seat-x-input');
-            const yInput = document.getElementById('seat-y-input');
+            const capacityInput = document.getElementById('seat-capacity-input');
             if (!seat) return;
             if (idInput) idInput.value = seat.id || '';
             if (statusInput) statusInput.value = seat.status || 'available';
             if (viewInput) viewInput.value = seat.view || '';
             if (tagInput) tagInput.value = seat.tag || '';
-            if (xInput) xInput.value = seat.x ?? '';
-            if (yInput) yInput.value = seat.y ?? '';
+            if (capacityInput) capacityInput.value = seat.capacity || 4;
         }
 
         function selectSeat(index) {
             selectedSeatIndex = index;
             const layout = getSeatLayout();
             const canvas = document.getElementById('seat-layout-canvas');
-            const editorIndex = document.getElementById('seat-editor-index');
             if (!canvas) return;
             canvas.querySelectorAll('.seat-node').forEach(node => {
                 node.classList.toggle('selected', parseInt(node.dataset.index, 10) === index);
             });
-            if (editorIndex) {
-                editorIndex.innerText = layout[index] ? `${layout[index].id} 선택됨` : '좌석을 선택해 주세요.';
-            }
-            if (layout[index]) {
-                populateSeatEditor(layout[index]);
-            }
         }
 
         function applySeatEditorValues() {
@@ -531,31 +583,57 @@
             seat.status = document.getElementById('seat-status-input').value;
             seat.view = document.getElementById('seat-view-input').value;
             seat.tag = document.getElementById('seat-tag-input').value;
-            const nextX = parseFloat(document.getElementById('seat-x-input').value);
-            const nextY = parseFloat(document.getElementById('seat-y-input').value);
-            seat.x = Number.isFinite(nextX) ? clamp(nextX, 0, 100) : seat.x;
-            seat.y = Number.isFinite(nextY) ? clamp(nextY, 0, 100) : seat.y;
-            const canvas = document.getElementById('seat-layout-canvas');
-            const selectedNode = canvas ? canvas.querySelector(`.seat-node[data-index="${selectedSeatIndex}"]`) : null;
-            if (selectedNode) {
-                selectedNode.textContent = seat.id;
-                selectedNode.dataset.status = seat.status;
-                selectedNode.style.left = `${seat.x}%`;
-                selectedNode.style.top = `${seat.y}%`;
-                selectedNode.classList.add('selected');
+            seat.capacity = clamp(parseInt(document.getElementById('seat-capacity-input').value, 10) || 4, 1, 50);
+            seat.table_image = pendingTableImage;
+            seat.view_image = pendingViewImage;
+            renderSeatLayoutEditor();
+            closeSeatModal();
+        }
+
+        function openSeatModal(index) {
+            const seat = getSeatLayout()[index];
+            if (!seat) return;
+            selectedSeatIndex = index;
+            populateSeatEditor(seat);
+            pendingTableImage = seat.table_image || '';
+            pendingViewImage = seat.view_image || '';
+            document.getElementById('seat-table-image-input').value = '';
+            document.getElementById('seat-view-image-input').value = '';
+            updateSeatImagePreview('table', pendingTableImage);
+            updateSeatImagePreview('view', pendingViewImage);
+            document.getElementById('seat-modal').classList.add('open');
+        }
+
+        function closeSeatModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('seat-modal').classList.remove('open');
+        }
+
+        function updateSeatImagePreview(kind, source) {
+            const preview = document.getElementById(`seat-${kind}-image-preview`);
+            preview.src = source || '';
+            preview.style.display = source ? 'block' : 'none';
+        }
+
+        async function previewSeatImage(input, kind) {
+            const file = input.files?.[0];
+            if (!file) return;
+            try {
+                const image = await prepareMenuImage(file);
+                if (kind === 'table') pendingTableImage = image;
+                else pendingViewImage = image;
+                updateSeatImagePreview(kind, image);
+            } catch (error) {
+                alert(error.message);
+                input.value = '';
             }
-            const editorIndex = document.getElementById('seat-editor-index');
-            if (editorIndex) {
-                editorIndex.innerText = `${seat.id} 선택됨`;
-            }
-            syncSeatButtonStyles();
         }
 
         function addSeat() {
             const layout = getSeatLayout();
             let nextIndex = layout.length + 1;
             while (layout.some(seat => seat.id === `T${nextIndex}`)) nextIndex += 1;
-            layout.push({ id: `T${nextIndex}`, x: 50, y: 50, status: 'available', view: '실내', tag: '', capacity: 4 });
+            layout.push({ id: `T${nextIndex}`, x: 50, y: 50, status: 'available', view: '실내', tag: '', capacity: 4, table_image: '', view_image: '' });
             seatLayoutState = layout;
             selectedSeatIndex = layout.length - 1;
             renderSeatLayoutEditor();
@@ -575,6 +653,7 @@
             const index = parseInt(node.dataset.index, 10);
             selectSeat(index);
             draggingSeatIndex = index;
+            seatWasDragged = false;
             event.preventDefault();
             document.body.style.userSelect = 'none';
             document.addEventListener('pointermove', handleSeatPointerMove);
@@ -589,6 +668,7 @@
             const x = ((event.clientX - rect.left) / rect.width) * 100;
             const y = ((event.clientY - rect.top) / rect.height) * 100;
             const seat = layout[draggingSeatIndex];
+            seatWasDragged = true;
             seat.x = clamp(Math.round(x * 10) / 10, 4, 96);
             seat.y = clamp(Math.round(y * 10) / 10, 6, 94);
             populateSeatEditor(seat);
@@ -603,6 +683,7 @@
             draggingSeatIndex = -1;
             document.body.style.userSelect = '';
             document.removeEventListener('pointermove', handleSeatPointerMove);
+            setTimeout(() => { seatWasDragged = false; }, 0);
         }
 
         function clamp(value, min, max) {
@@ -617,7 +698,7 @@
                 renderSeatLayoutEditor();
             } catch (error) {
                 console.error('Table layout load failed', error);
-                alert(error.message || '좌석 배치를 불러오지 못했습니다.');
+                alert(adminMessage('좌석 배치를 불러오지 못했습니다.', 'Could not load the seating layout.', 'Không thể tải sơ đồ bàn.'));
             }
         }
 
@@ -631,11 +712,11 @@
                 seatLayoutState = data.tables;
                 renderSeatLayoutEditor();
                 if (showAlert) {
-                    alert('좌석 배치가 저장되었습니다. 고객 화면을 새로고침하면 반영됩니다.');
+                    alert(adminMessage('좌석 배치가 저장되었습니다. 고객 화면을 새로고침하면 반영됩니다.', 'The seating layout was saved. Refresh the customer app to apply it.', 'Đã lưu sơ đồ bàn. Làm mới ứng dụng khách để áp dụng.'));
                 }
             } catch (error) {
                 console.error('Table layout save failed', error);
-                alert(error.message || '좌석 배치를 저장하지 못했습니다.');
+                alert(adminMessage('좌석 배치를 저장하지 못했습니다.', 'Could not save the seating layout.', 'Không thể lưu sơ đồ bàn.'));
             }
         }
 
@@ -644,7 +725,7 @@
             selectedSeatIndex = 0;
             renderSeatLayoutEditor();
             await saveSeatLayout(false);
-            alert('기본 좌석 배치로 복원하고 저장했습니다.');
+            alert(adminMessage('기본 좌석 배치로 복원하고 저장했습니다.', 'The default seating layout was restored and saved.', 'Đã khôi phục và lưu sơ đồ bàn mặc định.'));
         }
 
         function syncSeatButtonStyles() {
@@ -669,8 +750,6 @@
             if(viewId === 'qr-zone') generateQR();
             if(viewId === 'store-info') fetchStoreInfo();
             if(viewId === 'seat-layout') renderSeatLayoutEditor();
-            if(viewId === 'orders-board') fetchOrders();
-            if(viewId === 'reservations-board') fetchReservations();
         }
 
         // 초기 데이터 로딩
@@ -678,11 +757,14 @@
             try {
                 const data = await apiFetch('/api/store');
                 document.getElementById('si-name').value = data.name;
+                document.getElementById('si-name-en').value = data.name_en || '';
                 document.getElementById('si-hours').value = data.hours;
+                document.getElementById('si-hours-en').value = data.hours_en || '';
                 document.getElementById('si-desc').value = data.description;
+                document.getElementById('si-desc-en').value = data.description_en || '';
             } catch (error) {
                 console.error('Store info load error', error);
-                alert(error.message || '매장 정보를 불러오지 못했습니다.');
+                alert(adminMessage('매장 정보를 불러오지 못했습니다.', 'Could not load store information.', 'Không thể tải thông tin cửa hàng.'));
             }
         }
 
@@ -690,18 +772,22 @@
             e.preventDefault();
             const data = {
                 name: document.getElementById('si-name').value,
+                name_en: document.getElementById('si-name-en').value,
                 hours: document.getElementById('si-hours').value,
-                description: document.getElementById('si-desc').value
+                hours_en: document.getElementById('si-hours-en').value,
+                description: document.getElementById('si-desc').value,
+                description_en: document.getElementById('si-desc-en').value
             };
             try {
                 await apiFetch('/api/store', {
                     method: 'PUT', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-                alert("매장 정보가 업데이트 되었습니다.");
+                await fetchStoreInfo();
+                alert(adminMessage('매장 정보가 업데이트 되었습니다.', 'Store information was updated.', 'Đã cập nhật thông tin cửa hàng.'));
             } catch (error) {
                 console.error('Store info update error', error);
-                alert(error.message || '업데이트에 실패했습니다.');
+                alert(adminMessage('업데이트에 실패했습니다.', 'The update failed.', 'Cập nhật thất bại.'));
             }
         }
 
@@ -711,17 +797,7 @@
                 renderMenu();
             } catch (error) {
                 console.error('Menu load error', error);
-                alert(error.message || '메뉴를 불러오지 못했습니다.');
-            }
-        }
-
-        async function fetchQueueStatus() {
-            try {
-                const data = await apiFetch('/api/queue/status');
-                document.getElementById('wait-count').innerText = `${data.teams_ahead}팀`;
-            } catch (error) {
-                console.error('Queue status load error', error);
-                document.getElementById('wait-count').innerText = '오류';
+                alert(adminMessage('메뉴를 불러오지 못했습니다.', 'Could not load menus.', 'Không thể tải thực đơn.'));
             }
         }
 
@@ -738,34 +814,33 @@
         }
 
         function renderOrders() {
-            const ob = document.getElementById('orders-list');
-            if(!ob) return;
-            const today = new Date().toISOString().slice(0, 10);
-            const sales = ordersData
-                .filter(order => order.status === 'completed' && String(order.created_at).slice(0, 10) === today && order.currency === 'KRW')
-                .reduce((sum, order) => sum + Number(order.total_price || 0), 0);
-            const salesElement = document.getElementById('sales-total');
-            if (salesElement) salesElement.innerText = `₩${sales.toLocaleString('ko-KR')}`;
+            const containers = ['orders-list', 'seat-orders-list'].map(id => document.getElementById(id)).filter(Boolean);
+            if (containers.length === 0) return;
             if (ordersData.length === 0) {
-                ob.innerHTML = '<div style="color:var(--text-secondary);">현재 들어온 주문이 없습니다.</div>';
+                containers.forEach(container => { container.innerHTML = `<div style="color:var(--text-secondary);">${tr('no_orders')}</div>`; });
                 return;
             }
-            ob.innerHTML = ordersData.map(o => `
+            const locale = adminLanguage === 'ko' ? 'ko-KR' : adminLanguage === 'vi' ? 'vi-VN' : 'en-US';
+            const markup = ordersData.map(o => {
+                const menu = db.find(item => item.id === o.menu_id);
+                const menuName = menu ? (menu.name[adminLanguage] || menu.name.ko) : o.menu_name;
+                return `
                 <div class="card-container" style="padding: 1rem; margin-bottom: 1rem; border-left: 4px solid ${o.status === 'pending' ? 'var(--accent-warning)' : 'var(--accent-success)'}">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <h3 style="margin-bottom:0.25rem; font-size:1.1rem;"><i class="fa-solid fa-utensils"></i> [${escapeHtml(o.table_id)} 테이블] ${escapeHtml(o.menu_name)}</h3>
-                            <div style="color:var(--text-secondary); font-size:0.85rem;">주문 시간: ${escapeHtml(new Date(o.created_at).toLocaleString('ko-KR'))} | 수량: ${o.quantity}개 | 총 금액: ${o.total_price} ${escapeHtml(o.currency)}</div>
+                            <h3 style="margin-bottom:0.25rem; font-size:1.1rem;"><i class="fa-solid fa-utensils"></i> [${escapeHtml(o.table_id)} ${tr('table')}] ${escapeHtml(menuName)}</h3>
+                            <div style="color:var(--text-secondary); font-size:0.85rem;">${tr('order_time')}: ${escapeHtml(new Date(o.created_at).toLocaleString(locale))} | ${tr('quantity')}: ${o.quantity} | ${tr('total')}: ${o.total_price} ${escapeHtml(o.currency)}</div>
                         </div>
                         <div>
                             ${o.status === 'pending' 
-                                ? `<button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem;" onclick="completeOrder('${o.id}')">조리 완료</button>`
-                                : `<span style="color:var(--accent-success); font-weight:bold;"><i class="fa-solid fa-check"></i> 완료됨</span>`
+                                ? `<button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem;" onclick="completeOrder('${o.id}')">${tr('complete_order')}</button>`
+                                : `<span style="color:var(--accent-success); font-weight:bold;"><i class="fa-solid fa-check"></i> ${tr('completed')}</span>`
                             }
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
+            containers.forEach(container => { container.innerHTML = markup; });
         }
 
         async function completeOrder(id) {
@@ -777,58 +852,7 @@
                 await fetchOrders();
             } catch(error) {
                 console.error('Order status update error', error);
-                alert(error.message || '주문 상태를 변경하지 못했습니다.');
-            }
-        }
-
-        let reservationsData = [];
-        async function fetchReservations() {
-            try {
-                reservationsData = await apiFetch('/api/reservations');
-                renderReservations();
-            } catch(error) {
-                console.error('Reservation load error', error);
-                const container = document.getElementById('reservations-list');
-                if (container) container.innerHTML = `<div style="color:#ef4444;">${escapeHtml(error.message)}</div>`;
-            }
-        }
-
-        function renderReservations() {
-            const rb = document.getElementById('reservations-list');
-            if(!rb) return;
-            if (reservationsData.length === 0) {
-                rb.innerHTML = '<div style="color:var(--text-secondary);">현재 들어온 예약 요청이 없습니다.</div>';
-                return;
-            }
-            rb.innerHTML = reservationsData.map(r => `
-                <div class="card-container" style="padding: 1rem; margin-bottom: 1rem; border-left: 4px solid ${(r.status === 'reserved' || r.status === 'waiting') ? 'var(--accent-warning)' : r.status === 'accepted' ? 'var(--accent-success)' : '#ef4444'}">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <h3 style="margin-bottom:0.25rem; font-size:1.1rem;"><i class="fa-solid fa-calendar-check"></i> [${escapeHtml(r.table_id)} 테이블] ${r.status === 'waiting' ? '대기 요청' : '예약 요청'}</h3>
-                            <div style="color:var(--text-secondary); font-size:0.85rem;">요청 시간: ${escapeHtml(new Date(r.created_at).toLocaleString('ko-KR'))}</div>
-                        </div>
-                        <div style="display:flex; gap: 0.5rem;">
-                            ${(r.status === 'reserved' || r.status === 'waiting')
-                                ? `<button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem;" onclick="updateReservation('${r.id}', 'accepted')">예약 승인</button>
-                                   <button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem; background: #ef4444;" onclick="updateReservation('${r.id}', 'cancelled')">거절/취소</button>`
-                                : `<span style="color:${r.status === 'accepted' ? 'var(--accent-success)' : '#ef4444'}; font-weight:bold;"><i class="fa-solid ${r.status === 'accepted' ? 'fa-check' : 'fa-xmark'}"></i> ${r.status === 'accepted' ? '승인 완료' : '취소됨'}</span>`
-                            }
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function updateReservation(id, status) {
-            try {
-                await apiFetch(`/api/reservations/${encodeURIComponent(id)}/status`, {
-                    method: 'PUT', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ status })
-                });
-                await Promise.all([fetchReservations(), fetchTables(), fetchQueueStatus()]);
-            } catch(error) {
-                console.error('Reservation status update error', error);
-                alert(error.message || '예약 상태를 변경하지 못했습니다.');
+                alert(adminMessage('주문 상태를 변경하지 못했습니다.', 'Could not update the order.', 'Không thể cập nhật đơn hàng.'));
             }
         }
 
@@ -838,13 +862,10 @@
             fetchMenus();
             fetchKeywords();
             fetchTables();
-            fetchQueueStatus();
             fetchOrders();
-            fetchReservations();
+            applyAdminTranslations();
             setInterval(() => {
                 fetchOrders();
-                fetchReservations();
-                fetchQueueStatus();
             }, 5000); // 주기적으로 폴링
         };
 
@@ -875,7 +896,7 @@
                 renderKeywordSelector();
             } catch (error) {
                 console.error('Keyword load error', error);
-                alert(error.message || '추천 키워드를 불러오지 못했습니다.');
+                alert(adminMessage('추천 키워드를 불러오지 못했습니다.', 'Could not load keywords.', 'Không thể tải từ khóa.'));
             }
         }
 
@@ -902,7 +923,7 @@
                 } catch (error) {
                     console.error('Keyword save error', error);
                     await fetchKeywords();
-                    alert(error.message || '추천 키워드를 저장하지 못했습니다.');
+                    alert(adminMessage('추천 키워드를 저장하지 못했습니다.', 'Could not save keywords.', 'Không thể lưu từ khóa.'));
                 }
             }
             input.value = '';
@@ -917,7 +938,7 @@
             } catch (error) {
                 console.error('Keyword save error', error);
                 await fetchKeywords();
-                alert(error.message || '추천 키워드를 저장하지 못했습니다.');
+                alert(adminMessage('추천 키워드를 저장하지 못했습니다.', 'Could not save keywords.', 'Không thể lưu từ khóa.'));
             }
         }
 
@@ -926,17 +947,17 @@
             b.innerHTML = db.map(i => `<tr>
                 <td><input type="checkbox" class="menu-checkbox" data-id="${i.id}"></td>
                 <td style="opacity: ${i.isSoldOut ? '0.4' : '1'};">
-                    ${i.img ? `<img src="${escapeHtml(i.img)}" class="menu-img-thumb" alt="">` : `<div class="menu-img-thumb" style="display:flex;align-items:center;justify-content:center;color:#aaa;font-size:0.7rem;background:rgba(255,255,255,0.1);">No Img</div>`}
+                    ${i.img ? `<img src="${escapeHtml(i.img)}" class="menu-img-thumb" alt="">` : `<div class="menu-img-thumb" style="display:flex;align-items:center;justify-content:center;color:#aaa;font-size:0.7rem;background:rgba(255,255,255,0.1);">${tr('no_image')}</div>`}
                 </td>
-                <td style="font-weight:600; text-decoration: ${i.isSoldOut ? 'line-through' : 'none'}; opacity: ${i.isSoldOut ? '0.4' : '1'};">${escapeHtml(i.name['ko'])}</td>
+                <td style="font-weight:600; text-decoration: ${i.isSoldOut ? 'line-through' : 'none'}; opacity: ${i.isSoldOut ? '0.4' : '1'};">${escapeHtml(i.name[adminLanguage] || i.name['ko'])}</td>
                 <td style="opacity: ${i.isSoldOut ? '0.4' : '1'};">${i.price} ${escapeHtml(i.currency)}</td>
-                <td style="font-size: 0.8rem; color: var(--text-secondary); max-width: 150px; opacity: ${i.isSoldOut ? '0.4' : '1'};">${escapeHtml(i.desc['ko'] || '')}</td>
-                <td style="opacity: ${i.isSoldOut ? '0.4' : '1'};">${i.tags.map(t=>`<span class="tag">${escapeHtml(t['ko'])}</span>`).join('')}</td>
+                <td style="font-size: 0.8rem; color: var(--text-secondary); max-width: 150px; opacity: ${i.isSoldOut ? '0.4' : '1'};">${escapeHtml(i.desc[adminLanguage] || i.desc['ko'] || '')}</td>
+                <td style="opacity: ${i.isSoldOut ? '0.4' : '1'};">${i.tags.map(tag=>`<span class="tag">${escapeHtml(tag[adminLanguage] || tag['ko'])}</span>`).join('')}</td>
                 <td>
                     <div style="display:flex; gap:0.3rem;">
-                        <button class="btn" style="padding: 0.4rem 0.6rem; font-size: 0.75rem; width: auto; background: var(--bg-surface-hover); color: var(--text-primary); border: 1px solid var(--border-color);" onclick="editMenu('${i.id}')">수정</button>
+                        <button class="btn" style="padding: 0.4rem 0.6rem; font-size: 0.75rem; width: auto; background: var(--bg-surface-hover); color: var(--text-primary); border: 1px solid var(--border-color);" onclick="editMenu('${i.id}')">${tr('edit')}</button>
                         <button class="btn" style="padding: 0.4rem 0.6rem; font-size: 0.75rem; width: auto; background: ${i.isSoldOut ? 'var(--bg-surface-hover)' : 'var(--accent-warning)'}; color: ${i.isSoldOut ? 'var(--text-secondary)' : '#000'}; border: 1px solid var(--border-color);" onclick="toggleSoldOut('${i.id}')">
-                            ${i.isSoldOut ? '판매 재개' : '품절 처리'}
+                            ${i.isSoldOut ? tr('resume') : tr('mark_soldout')}
                         </button>
                     </div>
                 </td>
@@ -958,7 +979,7 @@
                 if(masterCb) masterCb.checked = false;
             } catch (error) {
                 console.error('Menu delete error', error);
-                alert(error.message || '메뉴를 삭제하지 못했습니다.');
+                alert(adminMessage('메뉴를 삭제하지 못했습니다.', 'Could not delete the menu.', 'Không thể xóa món.'));
             }
         }
 
@@ -974,7 +995,7 @@
                 await fetchMenus();
             } catch (error) {
                 console.error('Sold-out update error', error);
-                alert(error.message || '품절 상태를 변경하지 못했습니다.');
+                alert(adminMessage('품절 상태를 변경하지 못했습니다.', 'Could not update sold-out status.', 'Không thể cập nhật trạng thái hết món.'));
             }
         }
 
@@ -989,9 +1010,11 @@
             const item = db.find(menu => menu.id === menuId);
             if (!item) return;
             document.getElementById('in-name').value = item.name['ko'] || '';
+            document.getElementById('in-name-en').value = item.name['en'] || '';
             document.getElementById('in-price').value = item.price;
             document.getElementById('in-currency').value = item.currency || 'KRW';
             document.getElementById('in-desc').value = item.desc['ko'] || '';
+            document.getElementById('in-desc-en').value = item.desc['en'] || '';
             
             document.querySelectorAll('#keyword-selector .tag').forEach(el => {
                 const koWord = el.innerText;
@@ -1000,37 +1023,37 @@
                 else el.classList.remove('selected');
             });
             
-            document.getElementById('submit-btn').innerText = '수정 저장하기';
+            document.getElementById('submit-btn').innerText = tr('save');
             document.getElementById('cancel-btn').style.display = 'block';
         }
 
         function cancelEdit() {
             editMenuId = null;
-            document.getElementById('submit-btn').innerText = '메뉴 등록하기';
+            document.getElementById('submit-btn').innerText = tr('btn_submit');
             document.getElementById('cancel-btn').style.display = 'none';
             document.querySelector('#menu-mgmt form').reset();
             resetKeywordSelection();
         }
 
-        function mockTr(text) { return {ko: text, en: text, vi: text}; }
+        function mockTr(text, english = '') { return {ko: text, en: english, vi: ''}; }
 
         function prepareMenuImage(file) {
             return new Promise((resolve, reject) => {
                 const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
                 if (!allowedTypes.includes(file.type)) {
-                    reject(new Error('JPEG, PNG 또는 WEBP 이미지만 업로드할 수 있습니다.'));
+                    reject(new Error(adminMessage('JPEG, PNG 또는 WEBP 이미지만 업로드할 수 있습니다.', 'Only JPEG, PNG, or WEBP images are allowed.', 'Chỉ cho phép ảnh JPEG, PNG hoặc WEBP.')));
                     return;
                 }
                 if (file.size > 2 * 1024 * 1024) {
-                    reject(new Error('원본 이미지는 2MB 이하여야 합니다.'));
+                    reject(new Error(adminMessage('원본 이미지는 2MB 이하여야 합니다.', 'The original image must be 2MB or smaller.', 'Ảnh gốc phải nhỏ hơn hoặc bằng 2MB.')));
                     return;
                 }
 
                 const reader = new FileReader();
-                reader.onerror = () => reject(new Error('이미지 파일을 읽지 못했습니다.'));
+                reader.onerror = () => reject(new Error(adminMessage('이미지 파일을 읽지 못했습니다.', 'Could not read the image.', 'Không thể đọc ảnh.')));
                 reader.onload = event => {
                     const image = new Image();
-                    image.onerror = () => reject(new Error('이미지 형식을 확인할 수 없습니다.'));
+                    image.onerror = () => reject(new Error(adminMessage('이미지 형식을 확인할 수 없습니다.', 'Invalid image format.', 'Định dạng ảnh không hợp lệ.')));
                     image.onload = () => {
                         const scale = Math.min(1, 800 / Math.max(image.width, image.height));
                         const canvas = document.createElement('canvas');
@@ -1041,7 +1064,7 @@
                         const dataUrl = canvas.toDataURL(file.type, 0.8);
                         const estimatedBytes = Math.floor((dataUrl.split(',')[1]?.length || 0) * 0.75);
                         if (estimatedBytes > 2 * 1024 * 1024) {
-                            reject(new Error('리사이징된 이미지가 2MB를 초과합니다.'));
+                            reject(new Error(adminMessage('리사이징된 이미지가 2MB를 초과합니다.', 'The resized image exceeds 2MB.', 'Ảnh sau khi đổi kích thước vượt quá 2MB.')));
                             return;
                         }
                         resolve(dataUrl);
@@ -1055,19 +1078,21 @@
         async function addMenu(e) {
             e.preventDefault();
             const name = document.getElementById('in-name').value;
+            const nameEn = document.getElementById('in-name-en').value;
             const price = parseFloat(document.getElementById('in-price').value);
             const currency = document.getElementById('in-currency').value;
             const desc = document.getElementById('in-desc').value;
+            const descEn = document.getElementById('in-desc-en').value;
             const imgInput = document.getElementById('in-image');
             
             const selectedTags = Array.from(document.querySelectorAll('#keyword-selector .tag.selected')).map(el => el.innerText);
             const existing = editMenuId ? db.find(menu => menu.id === editMenuId) : null;
             
             const itemData = {
-                name: mockTr(name),
+                name: mockTr(name, nameEn),
                 price: price,
                 currency: currency,
-                desc: mockTr(desc),
+                desc: mockTr(desc, descEn),
                 tags: selectedTags.map(mockTr),
                 isSoldOut: existing?.isSoldOut || false
             };
@@ -1098,7 +1123,7 @@
                 }
             } catch (error) {
                 console.error('Menu save error', error);
-                alert(error.message || '메뉴를 저장하지 못했습니다.');
+                alert(adminMessage('메뉴를 저장하지 못했습니다. 이미지 형식과 입력값을 확인해 주세요.', 'Could not save the menu. Check the image format and form values.', 'Không thể lưu món. Hãy kiểm tra định dạng ảnh và dữ liệu nhập.'));
             }
         }
 
@@ -1119,10 +1144,10 @@
             if (!value) return;
             try {
                 await navigator.clipboard.writeText(value);
-                alert('URL을 복사했습니다.');
+                alert(adminMessage('URL을 복사했습니다.', 'URL copied.', 'Đã sao chép URL.'));
             } catch (error) {
                 console.error('URL copy failed', error);
-                alert('URL 복사에 실패했습니다.');
+                alert(adminMessage('URL 복사에 실패했습니다.', 'Could not copy the URL.', 'Không thể sao chép URL.'));
             }
         }
 

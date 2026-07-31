@@ -4,8 +4,14 @@ create extension if not exists vector;
 create table if not exists public.stores (
     id uuid primary key default gen_random_uuid(),
     name text not null,
+    name_en text,
+    name_vi text,
     hours text,
+    hours_en text,
+    hours_vi text,
     description text,
+    description_en text,
+    description_vi text,
     recommendation_keywords jsonb not null default '[]'::jsonb,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
@@ -39,6 +45,8 @@ create table if not exists public.tables (
     view_name text not null default '',
     tag text not null default '',
     capacity integer not null default 4 check (capacity between 1 and 50),
+    table_image text,
+    view_image text,
     sort_order integer not null default 0,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now(),
@@ -75,6 +83,26 @@ create table if not exists public.reservations (
     updated_at timestamptz not null default now()
 );
 
+create table if not exists public.reviews (
+    id uuid primary key default gen_random_uuid(),
+    store_id uuid not null references public.stores(id) on delete cascade,
+    rating integer not null check (rating between 1 and 5),
+    review_text text not null check (char_length(review_text) between 1 and 2000),
+    image_data text,
+    customer_session_id text not null,
+    created_at timestamptz not null default now()
+);
+
+-- Keep this file safe to re-run against databases created by an earlier release.
+alter table public.stores add column if not exists name_en text;
+alter table public.stores add column if not exists name_vi text;
+alter table public.stores add column if not exists hours_en text;
+alter table public.stores add column if not exists hours_vi text;
+alter table public.stores add column if not exists description_en text;
+alter table public.stores add column if not exists description_vi text;
+alter table public.tables add column if not exists table_image text;
+alter table public.tables add column if not exists view_image text;
+
 create index if not exists menus_store_id_idx
     on public.menus(store_id);
 create index if not exists tables_store_sort_idx
@@ -90,6 +118,8 @@ create index if not exists reservations_customer_session_idx
 create index if not exists reservations_waiting_idx
     on public.reservations(store_id, status)
     where status = 'waiting';
+create index if not exists reviews_store_created_idx
+    on public.reviews(store_id, created_at desc);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -165,6 +195,8 @@ begin
         view_name,
         tag,
         capacity,
+        table_image,
+        view_image,
         sort_order
     )
     select
@@ -176,6 +208,8 @@ begin
         coalesce(item->>'view_name', ''),
         coalesce(item->>'tag', ''),
         coalesce((item->>'capacity')::integer, 4),
+        nullif(item->>'table_image', ''),
+        nullif(item->>'view_image', ''),
         coalesce((item->>'sort_order')::integer, 0)
     from jsonb_array_elements(p_tables) item
     on conflict (store_id, table_code)
@@ -186,6 +220,8 @@ begin
         view_name = excluded.view_name,
         tag = excluded.tag,
         capacity = excluded.capacity,
+        table_image = excluded.table_image,
+        view_image = excluded.view_image,
         sort_order = excluded.sort_order,
         updated_at = now();
 end;
@@ -251,6 +287,7 @@ alter table public.menus enable row level security;
 alter table public.tables enable row level security;
 alter table public.orders enable row level security;
 alter table public.reservations enable row level security;
+alter table public.reviews enable row level security;
 
 -- No browser-facing policies are created. The Python API uses the server-only
 -- Supabase service role key and is the sole data access layer for this release.

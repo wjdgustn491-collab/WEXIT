@@ -92,8 +92,13 @@ class StoreUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     hours: str = Field(min_length=1, max_length=200)
     description: str = Field(min_length=1, max_length=500)
+    name_en: str = Field(default="", max_length=120)
+    hours_en: str = Field(default="", max_length=200)
+    description_en: str = Field(default="", max_length=500)
 
-    @field_validator("name", "hours", "description")
+    @field_validator(
+        "name", "hours", "description", "name_en", "hours_en", "description_en"
+    )
     @classmethod
     def strip_text(cls, value: str) -> str:
         return value.strip()
@@ -135,11 +140,18 @@ class TablePayload(BaseModel):
     view: str = Field(default="", max_length=100)
     tag: str = Field(default="", max_length=100)
     capacity: int = Field(default=4, ge=1, le=50)
+    table_image: Optional[str] = None
+    view_image: Optional[str] = None
 
     @field_validator("id")
     @classmethod
     def normalize_table_code(cls, value: str) -> str:
         return value.strip().upper()
+
+    @field_validator("table_image", "view_image")
+    @classmethod
+    def validate_table_images(cls, value: Optional[str]) -> Optional[str]:
+        return validate_image_value(value)
 
 
 class TableLayoutUpdate(BaseModel):
@@ -206,6 +218,26 @@ class ReservationStatusUpdate(BaseModel):
     status: Literal["accepted", "cancelled"]
 
 
+class ReviewCreate(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    review_text: str = Field(min_length=1, max_length=2000)
+    image: Optional[str] = None
+    customer_session_id: UUID
+
+    @field_validator("review_text")
+    @classmethod
+    def strip_review_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("리뷰 내용을 입력해 주세요.")
+        return value
+
+    @field_validator("image")
+    @classmethod
+    def validate_review_image(cls, value: Optional[str]) -> Optional[str]:
+        return validate_image_value(value)
+
+
 class ChatRequest(BaseModel):
     query: str = Field(min_length=1, max_length=2000)
     language: str = Field(default="ko", min_length=2, max_length=10)
@@ -248,6 +280,8 @@ def table_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
         "view": row.get("view_name") or "",
         "tag": row.get("tag") or "",
         "capacity": int(row.get("capacity", 4)),
+        "table_image": row.get("table_image") or "",
+        "view_image": row.get("view_image") or "",
     }
 
 
@@ -276,6 +310,17 @@ def reservation_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
         "party_size": int(row.get("party_size") or 0),
         "created_at": row["created_at"],
         "updated_at": row.get("updated_at"),
+    }
+
+
+def review_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": str(row["id"]),
+        "rating": int(row["rating"]),
+        "review_text": row["review_text"],
+        "image": row.get("image_data") or "",
+        "customer_session_id": row["customer_session_id"],
+        "created_at": row["created_at"],
     }
 
 
@@ -419,6 +464,8 @@ class SupabaseRepository:
                 "view_name": table.get("view", ""),
                 "tag": table.get("tag", ""),
                 "capacity": table.get("capacity", 4),
+                "table_image": table.get("table_image") or None,
+                "view_image": table.get("view_image") or None,
                 "sort_order": index,
             }
             for index, table in enumerate(tables, start=1)
@@ -546,6 +593,26 @@ class SupabaseRepository:
             raise HTTPException(status_code=404, detail="예약을 찾을 수 없습니다.")
         return response.data
 
+    def get_reviews(self) -> List[Dict[str, Any]]:
+        response = self._run(
+            lambda: self.client.table("reviews")
+            .select("*")
+            .eq("store_id", self.store_id)
+            .order("created_at", desc=True)
+            .execute(),
+            "리뷰를 불러오지 못했습니다.",
+        )
+        return response.data or []
+
+    def create_review(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        response = self._run(
+            lambda: self.client.table("reviews")
+            .insert({"store_id": self.store_id, **payload})
+            .execute(),
+            "리뷰를 등록하지 못했습니다.",
+        )
+        return response.data[0]
+
 
 REPOSITORY_ERROR = ""
 
@@ -593,17 +660,107 @@ def get_repository() -> SupabaseRepository:
 
 
 def menu_payload_to_row(payload: MenuPayload, include_image: bool) -> Dict[str, Any]:
+    translatable = {
+        "name": payload.name.get("ko", ""),
+        "description": payload.desc.get("ko", ""),
+        **{
+            f"tag_{index}": tag.get("ko", "")
+            for index, tag in enumerate(payload.tags)
+        },
+    }
+    generated = auto_translate_fields(translatable)
+    name = complete_translation(payload.name, generated, "name")
+    description = complete_translation(payload.desc, generated, "description")
+    tags = [
+        complete_translation(tag, generated, f"tag_{index}")
+        for index, tag in enumerate(payload.tags)
+    ]
     row: Dict[str, Any] = {
-        "name": payload.name,
+        "name": name,
         "price": payload.price,
         "currency": payload.currency,
-        "description": payload.desc,
-        "tags": payload.tags,
+        "description": description,
+        "tags": tags,
         "is_sold_out": payload.isSoldOut,
     }
     if include_image:
         row["image_data"] = payload.img or None
     return row
+
+
+def auto_translate_fields(fields: Dict[str, str]) -> Dict[str, Dict[str, str]]:
+    """Translate Korean source fields in one AI request, with a safe source fallback."""
+    fallback = {
+        language: {key: value for key, value in fields.items()}
+        for language in ("en", "vi")
+    }
+    if not gemini_client or not any(fields.values()):
+        return fallback
+    try:
+        response = gemini_client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=json.dumps(fields, ensure_ascii=False),
+            config=types.GenerateContentConfig(
+                system_instruction=(
+                    "Translate every JSON value from Korean into natural restaurant-context "
+                    "English and Vietnamese. Preserve keys, numbers, time ranges, and hashtag "
+                    "prefixes. Return JSON only in this exact shape: "
+                    '{"en":{"key":"translation"},"vi":{"key":"translation"}}.'
+                ),
+                response_mime_type="application/json",
+            ),
+        )
+        parsed = json.loads(response.text or "{}")
+        return {
+            language: {
+                key: str((parsed.get(language) or {}).get(key) or value).strip()
+                for key, value in fields.items()
+            }
+            for language in ("en", "vi")
+        }
+    except Exception:
+        logger.exception("Automatic translation failed")
+        return fallback
+
+
+def complete_translation(
+    current: Dict[str, str], generated: Dict[str, Dict[str, str]], field: str
+) -> Dict[str, str]:
+    korean = str(current.get("ko", "")).strip()
+    return {
+        "ko": korean,
+        "en": str(current.get("en", "")).strip()
+        or generated.get("en", {}).get(field, korean),
+        "vi": str(current.get("vi", "")).strip()
+        or generated.get("vi", {}).get(field, korean),
+    }
+
+
+def store_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": str(row["id"]),
+        "name": row["name"],
+        "hours": row.get("hours") or "",
+        "description": row.get("description") or "",
+        "name_en": row.get("name_en") or "",
+        "hours_en": row.get("hours_en") or "",
+        "description_en": row.get("description_en") or "",
+        "name_i18n": {
+            "ko": row["name"],
+            "en": row.get("name_en") or row["name"],
+            "vi": row.get("name_vi") or row["name"],
+        },
+        "hours_i18n": {
+            "ko": row.get("hours") or "",
+            "en": row.get("hours_en") or row.get("hours") or "",
+            "vi": row.get("hours_vi") or row.get("hours") or "",
+        },
+        "description_i18n": {
+            "ko": row.get("description") or "",
+            "en": row.get("description_en") or row.get("description") or "",
+            "vi": row.get("description_vi") or row.get("description") or "",
+        },
+    }
 
 
 @app.get("/api/health")
@@ -623,27 +780,36 @@ def health() -> Dict[str, Any]:
 
 @app.get("/api/store")
 def get_store() -> Dict[str, Any]:
-    row = get_repository().get_store()
-    return {
-        "id": str(row["id"]),
-        "name": row["name"],
-        "hours": row.get("hours") or "",
-        "description": row.get("description") or "",
-    }
+    return store_to_public(get_repository().get_store())
 
 
 @app.put("/api/store")
 def update_store(payload: StoreUpdate) -> Dict[str, Any]:
-    row = get_repository().update_store(payload.model_dump())
+    source = {
+        "name": payload.name,
+        "hours": payload.hours,
+        "description": payload.description,
+    }
+    generated = auto_translate_fields(source)
+    row = get_repository().update_store(
+        {
+            "name": payload.name,
+            "hours": payload.hours,
+            "description": payload.description,
+            "name_en": payload.name_en or generated["en"]["name"],
+            "hours_en": payload.hours_en or generated["en"]["hours"],
+            "description_en": (
+                payload.description_en or generated["en"]["description"]
+            ),
+            "name_vi": generated["vi"]["name"],
+            "hours_vi": generated["vi"]["hours"],
+            "description_vi": generated["vi"]["description"],
+        }
+    )
     return {
         "success": True,
         "message": "매장 정보가 저장되었습니다.",
-        "store": {
-            "id": str(row["id"]),
-            "name": row["name"],
-            "hours": row.get("hours") or "",
-            "description": row.get("description") or "",
-        },
+        "store": store_to_public(row),
     }
 
 
@@ -846,6 +1012,28 @@ def update_reservation_status(
     }
 
 
+@app.get("/api/reviews")
+def get_reviews() -> List[Dict[str, Any]]:
+    return [review_to_public(row) for row in get_repository().get_reviews()]
+
+
+@app.post("/api/reviews", status_code=201)
+def create_review(payload: ReviewCreate) -> Dict[str, Any]:
+    row = get_repository().create_review(
+        {
+            "rating": payload.rating,
+            "review_text": payload.review_text,
+            "image_data": payload.image or None,
+            "customer_session_id": str(payload.customer_session_id),
+        }
+    )
+    return {
+        "success": True,
+        "message": "리뷰가 등록되었습니다.",
+        "review": review_to_public(row),
+    }
+
+
 @app.get("/api/queue/status")
 def get_queue_status() -> Dict[str, Any]:
     repo = get_repository()
@@ -874,12 +1062,15 @@ def get_queue_status() -> Dict[str, Any]:
 
 @app.post("/api/chat")
 def chat(payload: ChatRequest) -> Dict[str, Any]:
+    language_names = {"ko": "Korean", "en": "English", "vi": "Vietnamese"}
+    fallback_messages = {
+        "ko": "현재 AI 추천 서비스를 이용할 수 없습니다. 전체 메뉴에서 직접 확인해주세요.",
+        "en": "The AI recommendation service is currently unavailable. Please check the full menu.",
+        "vi": "Dịch vụ gợi ý AI hiện không khả dụng. Vui lòng xem toàn bộ thực đơn.",
+    }
     fallback = {
         "success": False,
-        "reply": (
-            "현재 AI 추천 서비스를 이용할 수 없습니다. "
-            "전체 메뉴에서 직접 확인해주세요."
-        ),
+        "reply": fallback_messages.get(payload.language, fallback_messages["ko"]),
         "recommended_menu_ids": [],
     }
     if not gemini_client:
@@ -920,7 +1111,7 @@ def chat(payload: ChatRequest) -> Dict[str, Any]:
         )
         system_prompt = f"""
 당신은 레스토랑 Q-Menu의 친절한 AI 메뉴 및 좌석 안내 도우미입니다.
-응답 언어: {payload.language}
+응답 언어: {language_names.get(payload.language, payload.language)}. 다른 언어를 섞지 마세요.
 동작 모드: {payload.mode}. {mode_instruction}
 
 매장 정보:

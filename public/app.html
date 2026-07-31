@@ -224,35 +224,127 @@
 
         const customerSessionId = getCustomerSessionId();
 
+        const LanguageContext = React.createContext(null);
+        const LANGUAGE_OPTIONS = [
+            { value: 'ko', label: '한국어' },
+            { value: 'en', label: 'English' },
+            { value: 'vi', label: 'Tiếng Việt' }
+        ];
+        const UI_TEXT = {
+            ko: {
+                floorReservation: '도면예약', activity: '예약·주문', chatbot: 'AI 챗봇', fullMenu: '전체 메뉴', reviews: '가게리뷰',
+                storeInfo: '매장 정보', seatsLive: '실시간 좌석 현황', refreshHint: '새로고침 시 최신 정보 반영', available: '이용 가능', soon: '곧 만석', reserved: '예약석', occupied: '이용 중', terrace: '테라스', popular: '인기', kitchen: '주방', restroom: '화장실', bar: '바 / 카운터',
+                selectSeat: '원하시는 좌석을 선택해주세요', selectSeatDesc: '좌석을 선택하면 상세 정보와 이용 가능 시간을 확인할 수 있어요.', table: '테이블', maxPeople: '최대 {count}인', status: '상태', feature: '특징', soonWait: '곧 만석 (대기 가능)', reserveThis: '이 자리 예약하기', waitThis: '이 자리에 대기 걸기', webNoReserve: '웹 탐색 전용 모드에서는 예약할 수 없습니다', noTablePhoto: '등록된 테이블 사진이 없습니다.', tablePhoto: '테이블 사진', viewPhoto: '뷰 사진',
+                webMode: '인터넷 배포용 모드 (메뉴 탐색 전용 / 예약 및 주문 불가)', greeting: '안녕하세요! 메뉴 추천이나 스마트 주문을 도와드릴까요?', aiTitle: 'AI 오더 어시스턴트', today: '오늘', preparing: '답변을 준비하고 있어요...', chatPlaceholder: '먹고 싶은 메뉴를 말해주세요...', noImage: '이미지 없음', recommended: '추천 메뉴', networkError: '네트워크 오류가 발생했습니다.', demoImage: '매장에 설정된 메뉴 사진입니다.',
+                noMenus: '등록된 메뉴가 없습니다.', soldOut: '품절', storeOnlyOrder: '매장 전용 주문', orderOne: '1개 주문하기', webNoOrder: '인터넷 탐색 전용 모드에서는 주문이 불가합니다. 매장을 방문해주세요!', tablePrompt: '현재 앉아계신 테이블 번호를 입력하세요 (예: T12):',
+                myActivity: '나의 예약·주문 현황', reservations: '예약 현황', orders: '주문 현황', noReservations: '예약 내역이 없습니다.', noOrders: '주문 내역이 없습니다.', approvalWaiting: '승인 대기 중', approved: '승인 완료', cancelled: '취소/거절됨', quantity: '수량', total: '총 금액', cooking: '조리 중', served: '서빙 완료', orderCancelled: '주문 취소', countUnit: '개',
+                storeReviews: '가게 리뷰', writeReview: '리뷰 작성', rating: '별점', reviewText: '리뷰 내용', reviewPlaceholder: '매장 이용 경험을 알려주세요.', reviewPhoto: '사진 등록 (선택)', submitReview: '리뷰 등록하기', noReviews: '아직 작성된 리뷰가 없습니다.', reviewSaved: '리뷰가 등록되었습니다.',
+                settings: '설정', language: '언어', languageDesc: '선택 즉시 화면, 가격과 AI 챗봇 언어가 변경됩니다.', close: '닫기', hours: '운영 시간', loadFailed: '정보를 불러오지 못했습니다.', reservationSubmitted: '예약 요청이 등록되었습니다.', orderSubmitted: '주문이 완료되었습니다.', imageError: 'JPEG, PNG, WEBP 형식의 2MB 이하 사진을 선택해주세요.'
+            },
+            en: {
+                floorReservation: 'Floor Plan', activity: 'Bookings & Orders', chatbot: 'AI Chat', fullMenu: 'Menu', reviews: 'Reviews',
+                storeInfo: 'Store Info', seatsLive: 'Live Seating', refreshHint: 'Refresh for the latest status', available: 'Available', soon: 'Filling Up', reserved: 'Reserved', occupied: 'Occupied', terrace: 'Terrace', popular: 'Popular', kitchen: 'Kitchen', restroom: 'Restroom', bar: 'Bar / Counter',
+                selectSeat: 'Select your preferred table', selectSeatDesc: 'Choose a table to see details and availability.', table: 'Table', maxPeople: 'Up to {count}', status: 'Status', feature: 'Feature', soonWait: 'Filling up (waitlist available)', reserveThis: 'Reserve this table', waitThis: 'Join the waitlist', webNoReserve: 'Reservations are unavailable in browsing mode', noTablePhoto: 'No table photo has been added.', tablePhoto: 'Table Photo', viewPhoto: 'View Photo',
+                webMode: 'Online browsing mode (menu only / ordering and booking unavailable)', greeting: 'Hello! Can I help with menu recommendations or smart ordering?', aiTitle: 'AI Order Assistant', today: 'Today', preparing: 'Preparing a response...', chatPlaceholder: 'Tell me what you would like to eat...', noImage: 'No image', recommended: 'Recommended', networkError: 'A network error occurred.', demoImage: 'Here are menu photos provided by the store.',
+                noMenus: 'No menu items are available.', soldOut: 'Sold out', storeOnlyOrder: 'Order in store', orderOne: 'Order one', webNoOrder: 'Ordering is unavailable in browsing mode. Please visit the store.', tablePrompt: 'Enter your current table number (e.g. T12):',
+                myActivity: 'My Bookings & Orders', reservations: 'Bookings', orders: 'Orders', noReservations: 'No booking history.', noOrders: 'No order history.', approvalWaiting: 'Awaiting approval', approved: 'Approved', cancelled: 'Cancelled / Declined', quantity: 'Qty', total: 'Total', cooking: 'Preparing', served: 'Served', orderCancelled: 'Cancelled', countUnit: '',
+                storeReviews: 'Store Reviews', writeReview: 'Write a Review', rating: 'Rating', reviewText: 'Review', reviewPlaceholder: 'Tell us about your experience.', reviewPhoto: 'Add photo (optional)', submitReview: 'Submit Review', noReviews: 'There are no reviews yet.', reviewSaved: 'Your review was submitted.',
+                settings: 'Settings', language: 'Language', languageDesc: 'The interface, prices, and AI chat language update immediately.', close: 'Close', hours: 'Hours', loadFailed: 'Could not load information.', reservationSubmitted: 'Your booking request was submitted.', orderSubmitted: 'Your order was placed.', imageError: 'Choose a JPEG, PNG, or WEBP image up to 2MB.'
+            },
+            vi: {
+                floorReservation: 'Sơ đồ bàn', activity: 'Đặt chỗ & Đơn', chatbot: 'Chat AI', fullMenu: 'Thực đơn', reviews: 'Đánh giá',
+                storeInfo: 'Thông tin quán', seatsLive: 'Tình trạng bàn', refreshHint: 'Làm mới để cập nhật', available: 'Còn trống', soon: 'Sắp đầy', reserved: 'Đã đặt', occupied: 'Đang dùng', terrace: 'Sân hiên', popular: 'Phổ biến', kitchen: 'Bếp', restroom: 'Nhà vệ sinh', bar: 'Quầy bar',
+                selectSeat: 'Hãy chọn bàn bạn muốn', selectSeatDesc: 'Chọn bàn để xem chi tiết và thời gian khả dụng.', table: 'Bàn', maxPeople: 'Tối đa {count} người', status: 'Trạng thái', feature: 'Đặc điểm', soonWait: 'Sắp đầy (có thể chờ)', reserveThis: 'Đặt bàn này', waitThis: 'Đăng ký chờ', webNoReserve: 'Không thể đặt bàn trong chế độ xem trực tuyến', noTablePhoto: 'Chưa có ảnh bàn.', tablePhoto: 'Ảnh bàn', viewPhoto: 'Ảnh khung cảnh',
+                webMode: 'Chế độ xem trực tuyến (chỉ xem thực đơn / không thể đặt món, đặt bàn)', greeting: 'Xin chào! Tôi có thể gợi ý món hoặc hỗ trợ đặt món không?', aiTitle: 'Trợ lý đặt món AI', today: 'Hôm nay', preparing: 'Đang chuẩn bị câu trả lời...', chatPlaceholder: 'Hãy cho tôi biết bạn muốn ăn gì...', noImage: 'Không có ảnh', recommended: 'Món gợi ý', networkError: 'Đã xảy ra lỗi mạng.', demoImage: 'Đây là ảnh món ăn do nhà hàng cung cấp.',
+                noMenus: 'Chưa có món ăn.', soldOut: 'Hết món', storeOnlyOrder: 'Đặt tại quán', orderOne: 'Đặt 1 phần', webNoOrder: 'Không thể đặt món trong chế độ xem. Vui lòng đến quán.', tablePrompt: 'Nhập số bàn hiện tại (ví dụ: T12):',
+                myActivity: 'Đặt chỗ & Đơn của tôi', reservations: 'Đặt chỗ', orders: 'Đơn hàng', noReservations: 'Không có lịch sử đặt chỗ.', noOrders: 'Không có lịch sử đơn hàng.', approvalWaiting: 'Chờ xác nhận', approved: 'Đã xác nhận', cancelled: 'Đã hủy / Từ chối', quantity: 'Số lượng', total: 'Tổng', cooking: 'Đang chuẩn bị', served: 'Đã phục vụ', orderCancelled: 'Đã hủy', countUnit: 'phần',
+                storeReviews: 'Đánh giá cửa hàng', writeReview: 'Viết đánh giá', rating: 'Số sao', reviewText: 'Nội dung', reviewPlaceholder: 'Chia sẻ trải nghiệm của bạn.', reviewPhoto: 'Thêm ảnh (không bắt buộc)', submitReview: 'Gửi đánh giá', noReviews: 'Chưa có đánh giá.', reviewSaved: 'Đã gửi đánh giá.',
+                settings: 'Cài đặt', language: 'Ngôn ngữ', languageDesc: 'Giao diện, giá và ngôn ngữ AI thay đổi ngay lập tức.', close: 'Đóng', hours: 'Giờ mở cửa', loadFailed: 'Không thể tải thông tin.', reservationSubmitted: 'Đã gửi yêu cầu đặt bàn.', orderSubmitted: 'Đã đặt món thành công.', imageError: 'Chọn ảnh JPEG, PNG hoặc WEBP tối đa 2MB.'
+            }
+        };
+
+        function useLocale() {
+            return React.useContext(LanguageContext);
+        }
+
+        function localized(value, language) {
+            if (value && typeof value === 'object') return value[language] || value.ko || value.en || '';
+            return value || '';
+        }
+        const TABLE_META = {
+            '창가': {ko:'창가', en:'Window', vi:'Cạnh cửa sổ'},
+            '실내': {ko:'실내', en:'Indoor', vi:'Trong nhà'},
+            '테라스': {ko:'테라스', en:'Terrace', vi:'Sân hiên'},
+            '인기': {ko:'인기', en:'Popular', vi:'Phổ biến'}
+        };
+        function localizedTableText(value, language) {
+            return TABLE_META[value]?.[language] || value || '';
+        }
+
+        const KRW_PER_CURRENCY = { KRW: 1, USD: 1380, VND: 0.054 };
+        const LANGUAGE_CURRENCY = { ko: 'KRW', en: 'USD', vi: 'VND' };
+        function formatLocalizedPrice(amount, sourceCurrency, language) {
+            const targetCurrency = LANGUAGE_CURRENCY[language] || 'KRW';
+            const krwValue = Number(amount || 0) * (KRW_PER_CURRENCY[sourceCurrency] || 1);
+            const converted = krwValue / KRW_PER_CURRENCY[targetCurrency];
+            const locale = language === 'ko' ? 'ko-KR' : language === 'vi' ? 'vi-VN' : 'en-US';
+            const digits = targetCurrency === 'USD' ? 2 : 0;
+            return new Intl.NumberFormat(locale, { style: 'currency', currency: targetCurrency, maximumFractionDigits: digits }).format(converted);
+        }
+
+        function prepareImage(file) {
+            return new Promise((resolve, reject) => {
+                if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return reject(new Error('JPEG, PNG, WEBP only'));
+                if (file.size > 2 * 1024 * 1024) return reject(new Error('Image must be 2MB or smaller'));
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('Could not read image'));
+                reader.onload = event => {
+                    const image = new Image();
+                    image.onerror = () => reject(new Error('Invalid image'));
+                    image.onload = () => {
+                        const scale = Math.min(1, 1000 / Math.max(image.width, image.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(image.width * scale));
+                        canvas.height = Math.max(1, Math.round(image.height * scale));
+                        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL(file.type, 0.8));
+                    };
+                    image.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         // ---------------------------------------------------------
         // 2. COMPONENTS
         // ---------------------------------------------------------
 
         // --- Bottom Navigation ---
         function BottomNav({ activeTab, setActiveTab }) {
+            const { t } = useLocale();
             return (
                 <div className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around py-2 pb-5 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] rounded-t-3xl" style={{height: 'var(--bottom-nav-height)'}}>
                     <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-brand-green' : 'text-gray-400'}`}>
                         <i className="fa-solid fa-map-location-dot text-lg"></i>
-                        <span className="text-[9px] font-bold">도면예약</span>
+                        <span className="text-[9px] font-bold">{t.floorReservation}</span>
                     </button>
                     <button onClick={() => setActiveTab('reservation')} className={`flex flex-col items-center gap-1 ${activeTab === 'reservation' ? 'text-brand-green' : 'text-gray-400'}`}>
                         <i className="fa-regular fa-calendar-check text-lg"></i>
-                        <span className="text-[9px] font-bold">예약현황</span>
+                        <span className="text-[9px] font-bold">{t.activity}</span>
                     </button>
                     <button onClick={() => setActiveTab('chat')} className={`flex flex-col items-center gap-1 ${activeTab === 'chat' ? 'text-brand-green' : 'text-gray-400'}`}>
                         <div className={`w-12 h-12 -mt-5 rounded-full flex items-center justify-center text-white shadow-lg ${activeTab === 'chat' ? 'bg-brand-green' : 'bg-gray-300'}`}>
                             <i className="fa-solid fa-robot text-xl"></i>
                         </div>
-                        <span className="text-[9px] font-bold">AI 챗봇</span>
+                        <span className="text-[9px] font-bold">{t.chatbot}</span>
                     </button>
                     <button onClick={() => setActiveTab('menu')} className={`flex flex-col items-center gap-1 ${activeTab === 'menu' ? 'text-brand-green' : 'text-gray-400'}`}>
                         <i className="fa-solid fa-utensils text-lg"></i>
-                        <span className="text-[9px] font-bold">전체 메뉴</span>
+                        <span className="text-[9px] font-bold">{t.fullMenu}</span>
                     </button>
-                    <button onClick={() => setActiveTab('order-status')} className={`flex flex-col items-center gap-1 ${activeTab === 'order-status' ? 'text-brand-green' : 'text-gray-400'}`}>
-                        <i className="fa-solid fa-receipt text-lg"></i>
-                        <span className="text-[9px] font-bold">주문현황</span>
+                    <button onClick={() => setActiveTab('reviews')} className={`flex flex-col items-center gap-1 ${activeTab === 'reviews' ? 'text-brand-green' : 'text-gray-400'}`}>
+                        <i className="fa-solid fa-star text-lg"></i>
+                        <span className="text-[9px] font-bold">{t.reviews}</span>
                     </button>
                 </div>
             );
@@ -260,6 +352,7 @@
 
         // --- Seat Map View ---
         function HomeView({ tables, onSeatClick, storeInfo, onShowStoreInfo }) {
+            const { t, language } = useLocale();
             const statusCounts = tables.reduce((counts, table) => {
                 counts[table.status] = (counts[table.status] || 0) + 1;
                 return counts;
@@ -290,17 +383,17 @@
                     <div className="bg-white px-5 py-4 pt-12 shadow-sm relative z-20">
                         {appMode === 'web' && (
                             <div className="absolute top-0 left-0 w-full bg-red-500 text-white text-center text-[10px] py-1 font-bold z-50">
-                                인터넷 배포용 모드 (메뉴 탐색 전용 / 예약 및 주문 불가)
+                                {t.webMode}
                             </div>
                         )}
                         <div className="flex items-center gap-3 mb-1">
                             <i className="fa-solid fa-arrow-left text-lg"></i>
-                            <h1 className="text-xl font-bold">{storeInfo.name} <i className="fa-regular fa-heart text-gray-400 text-base"></i></h1>
+                            <h1 className="text-xl font-bold">{localized(storeInfo.name_i18n || storeInfo.name, language)} <i className="fa-regular fa-heart text-gray-400 text-base"></i></h1>
                             <div className="ml-auto bg-brand-bg px-3 py-1.5 rounded-full text-xs font-semibold text-brand-textDark flex items-center gap-1 cursor-pointer active:scale-95" onClick={onShowStoreInfo}>
-                                <i className="fa-solid fa-circle-info text-[10px]"></i> 매장 정보
+                                <i className="fa-solid fa-circle-info text-[10px]"></i> {t.storeInfo}
                             </div>
                         </div>
-                        <p className="text-sm text-brand-textLight ml-7">{storeInfo.description}</p>
+                        <p className="text-sm text-brand-textLight ml-7">{localized(storeInfo.description_i18n || storeInfo.description, language)}</p>
                     </div>
 
                     {/* Stats Card */}
@@ -309,32 +402,32 @@
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <div className="w-2.5 h-2.5 rounded-full bg-brand-greenLight animate-pulse"></div>
-                                    <span className="font-bold text-[15px]">실시간 좌석 현황</span>
+                                    <span className="font-bold text-[15px]">{t.seatsLive}</span>
                                 </div>
                                 <div className="text-[11px] text-gray-400 flex items-center gap-1 ml-4">
-                                    새로고침 시 최신 정보 반영 <i className="fa-solid fa-rotate-right"></i>
+                                    {t.refreshHint} <i className="fa-solid fa-rotate-right"></i>
                                 </div>
                             </div>
                             <div className="flex gap-4 text-center">
                                 <div>
                                     <i className="fa-solid fa-couch text-[#799a74] mb-1"></i>
                                     <div className="font-bold">{statusCounts.available}</div>
-                                    <div className="text-[10px] text-gray-500">이용 가능</div>
+                                    <div className="text-[10px] text-gray-500">{t.available}</div>
                                 </div>
                                 <div className="border-l border-gray-100 pl-3">
                                     <i className="fa-solid fa-clock text-[#d19f4d] mb-1"></i>
                                     <div className="font-bold">{statusCounts.soon}</div>
-                                    <div className="text-[10px] text-gray-500">곧 만석</div>
+                                    <div className="text-[10px] text-gray-500">{t.soon}</div>
                                 </div>
                                 <div className="border-l border-gray-100 pl-3">
                                     <i className="fa-solid fa-bookmark text-[#5b7c99] mb-1"></i>
                                     <div className="font-bold">{statusCounts.reserved}</div>
-                                    <div className="text-[10px] text-gray-500">예약석</div>
+                                    <div className="text-[10px] text-gray-500">{t.reserved}</div>
                                 </div>
                                 <div className="border-l border-gray-100 pl-3">
                                     <i className="fa-solid fa-user text-[#c06c6c] mb-1"></i>
                                     <div className="font-bold">{statusCounts.occupied}</div>
-                                    <div className="text-[10px] text-gray-500">이용 중</div>
+                                    <div className="text-[10px] text-gray-500">{t.occupied}</div>
                                 </div>
                             </div>
                         </div>
@@ -346,13 +439,13 @@
                             {/* Legend */}
                             <div className="flex flex-wrap items-center justify-between p-3 border-b border-gray-100 text-[10px] font-semibold text-gray-600 gap-y-2">
                                 <div className="flex gap-3">
-                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#799a74]"></span> 이용 가능</span>
-                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#d19f4d]"></span> 곧 만석</span>
-                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#5b7c99]"></span> 예약석</span>
+                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#799a74]"></span> {t.available}</span>
+                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#d19f4d]"></span> {t.soon}</span>
+                                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-[#5b7c99]"></span> {t.reserved}</span>
                                 </div>
                                 <div className="flex gap-3">
-                                    <span className="flex items-center gap-1 border border-dashed border-[#4CAF7D] bg-[#4CAF7D]/10 px-1 rounded">테라스</span>
-                                    <span className="flex items-center gap-1 text-[#E0A83C]"><i className="fa-solid fa-star"></i> 인기</span>
+                                    <span className="flex items-center gap-1 border border-dashed border-[#4CAF7D] bg-[#4CAF7D]/10 px-1 rounded">{t.terrace}</span>
+                                    <span className="flex items-center gap-1 text-[#E0A83C]"><i className="fa-solid fa-star"></i> {t.popular}</span>
                                 </div>
                             </div>
 
@@ -361,19 +454,19 @@
                                 {/* Indoor (Wood) */}
                                 <div className="w-[70%] h-full texture-wood relative border-r-[4px] border-[#a08466]">
                                     {/* Kitchen & Restroom placeholders */}
-                                    <div className="absolute top-0 left-0 w-24 h-28 bg-[#d8d8d8] border-r-2 border-b-2 border-[#b5b5b5] flex items-center justify-center text-xs font-bold text-gray-500">주방</div>
+                                    <div className="absolute top-0 left-0 w-24 h-28 bg-[#d8d8d8] border-r-2 border-b-2 border-[#b5b5b5] flex items-center justify-center text-xs font-bold text-gray-500">{t.kitchen}</div>
                                     <div className="absolute top-0 left-24 w-16 h-20 bg-[#e8e8e8] border-r-2 border-b-2 border-[#b5b5b5] flex flex-col items-center justify-center text-xs font-bold text-gray-500">
-                                        화장실
+                                        {t.restroom}
                                         <div className="flex gap-1 mt-1"><i className="fa-solid fa-person"></i><i className="fa-solid fa-person-dress"></i></div>
                                     </div>
                                     {/* Bar */}
-                                    <div className="absolute top-4 right-10 w-40 h-12 bg-[#f0f0f0] border-2 border-[#d0d0d0] rounded-b-xl flex items-center justify-center text-xs font-bold text-gray-500 shadow-md">바 / 카운터</div>
+                                    <div className="absolute top-4 right-10 w-40 h-12 bg-[#f0f0f0] border-2 border-[#d0d0d0] rounded-b-xl flex items-center justify-center text-xs font-bold text-gray-500 shadow-md">{t.bar}</div>
                                 </div>
                                 
                                 {/* Terrace (Stone) */}
                                 <div className="w-[30%] h-full texture-stone relative">
                                     <div className="absolute inset-0 border-[6px] border-[#4c6a46] m-1 opacity-80"></div>
-                                    <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#334d30] text-white text-[10px] px-3 py-1 rounded font-bold shadow-md z-10">테라스</div>
+                                    <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-[#334d30] text-white text-[10px] px-3 py-1 rounded font-bold shadow-md z-10">{t.terrace}</div>
                                 </div>
 
                                 {/* Render Tables */}
@@ -391,9 +484,9 @@
                                         <div className="absolute -bottom-1.5 w-6 h-1.5 bg-white/60 rounded-b-sm"></div>
                                         
                                         {/* Tags */}
-                                        {t.tag && !t.pop && <div className="mt-2 text-[9px] bg-white/80 px-1.5 rounded text-gray-600 shadow-sm">{t.tag}</div>}
+                                        {t.tag && !t.pop && <div className="mt-2 text-[9px] bg-white/80 px-1.5 rounded text-gray-600 shadow-sm">{localizedTableText(t.tag, language)}</div>}
                                         {t.pop && <div className="absolute -top-3 -right-2 text-[#E0A83C] text-sm drop-shadow-md"><i className="fa-solid fa-star"></i></div>}
-                                        {t.pop && t.tag && <div className="mt-2 text-[9px] bg-white/80 px-1.5 rounded text-[#E0A83C] font-bold shadow-sm">{t.tag}</div>}
+                                        {t.pop && t.tag && <div className="mt-2 text-[9px] bg-white/80 px-1.5 rounded text-[#E0A83C] font-bold shadow-sm">{localizedTableText(t.tag, language)}</div>}
                                     </div>
                                 ))}
                             </div>
@@ -407,8 +500,8 @@
                                 <i className="fa-solid fa-utensils text-xl"></i>
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-bold text-brand-textDark">원하시는 좌석을 선택해주세요</h3>
-                                <p className="text-[11px] text-brand-textLight mt-0.5">좌석을 선택하면 상세 정보와 이용 가능 시간을 확인할 수 있어요.</p>
+                                <h3 className="font-bold text-brand-textDark">{t.selectSeat}</h3>
+                                <p className="text-[11px] text-brand-textLight mt-0.5">{t.selectSeatDesc}</p>
                             </div>
                         </div>
                     </div>
@@ -418,6 +511,7 @@
 
         // --- Bottom Sheet Modal ---
         function BottomSheet({ seat, onClose }) {
+            const { t, language } = useLocale();
             const handleReserve = async () => {
                 try {
                     const data = await apiFetch('/api/reservations', {
@@ -430,55 +524,64 @@
                         })
                     });
                     if(data.success) {
-                        alert(data.message);
+                        alert(t.reservationSubmitted);
                         onClose();
                     }
                 } catch(error) {
                     console.error('Reservation request failed', error);
-                    alert(error.message || '예약 처리에 실패했습니다.');
+                    alert(t.networkError);
                 }
             };
 
             if(!seat) return null;
             return (
                 <div className="fixed inset-0 z-50 flex items-end animate-fade-in bg-black/40" onClick={onClose}>
-                    <div className="w-full bg-brand-bg rounded-t-3xl pb-8 animate-slide-up" onClick={e=>e.stopPropagation()}>
+                    <div className="w-full max-h-[92dvh] overflow-y-auto bg-brand-bg rounded-t-3xl pb-8 animate-slide-up no-scrollbar" onClick={e=>e.stopPropagation()}>
                         <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3"></div>
                         <div className="px-6 py-4">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <div className="text-brand-green font-bold text-sm mb-1">{seat.view}</div>
-                                    <h2 className="text-2xl font-bold text-brand-textDark">{seat.id} 테이블</h2>
+                                    <div className="text-brand-green font-bold text-sm mb-1">{localizedTableText(seat.view, language)}</div>
+                                    <h2 className="text-2xl font-bold text-brand-textDark">{seat.id} {t.table}</h2>
                                 </div>
                                 <div className="bg-white shadow-sm px-3 py-1.5 rounded-xl font-bold text-brand-green">
-                                    <i className="fa-solid fa-user-group mr-1"></i>최대 4인
+                                    <i className="fa-solid fa-user-group mr-1"></i>{t.maxPeople.replace('{count}', seat.capacity || 4)}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 mb-6">
                                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                                    <div className="text-xs text-brand-textLight mb-1">상태</div>
+                                    <div className="text-xs text-brand-textLight mb-1">{t.status}</div>
                                     <div className="font-bold flex items-center gap-2 text-brand-textDark">
                                         <span className={`w-2.5 h-2.5 rounded-full ${seat.status==='available'?'bg-[#799a74]':seat.status==='soon'?'bg-[#d19f4d]':'bg-[#c06c6c]'}`}></span>
-                                        {seat.status === 'available' ? '이용 가능' : seat.status === 'soon' ? '곧 만석 (대기 가능)' : '이용 중'}
+                                        {seat.status === 'available' ? t.available : seat.status === 'soon' ? t.soonWait : t.occupied}
                                     </div>
                                 </div>
                                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                                    <div className="text-xs text-brand-textLight mb-1">특징</div>
+                                    <div className="text-xs text-brand-textLight mb-1">{t.feature}</div>
                                     <div className="font-bold text-brand-textDark flex items-center gap-1">
                                         {seat.pop && <i className="fa-solid fa-star text-brand-gold"></i>}
-                                        {seat.view}
+                                        {localizedTableText(seat.view, language)}
                                     </div>
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                {[{src: seat.table_image, label: t.tablePhoto}, {src: seat.view_image, label: t.viewPhoto}].map(photo => (
+                                    <div key={photo.label} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                                        {photo.src ? <img src={photo.src} alt={photo.label} className="w-full h-28 object-cover cursor-pointer" onClick={() => window.showLightbox(photo.src)} /> : <div className="h-28 flex items-center justify-center text-center px-3 text-[11px] text-gray-400">{t.noTablePhoto}</div>}
+                                        <div className="px-3 py-2 text-[11px] font-bold text-brand-textDark">{photo.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+
                             {appMode === 'web' ? (
                                 <button disabled className="w-full bg-gray-300 text-gray-500 font-bold py-4 rounded-2xl shadow-none cursor-not-allowed">
-                                    웹 탐색 전용 모드에서는 예약할 수 없습니다
+                                    {t.webNoReserve}
                                 </button>
                             ) : (
                                 <button onClick={handleReserve} className="w-full bg-brand-green text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-[#1F3D2B] transition active:scale-95">
-                                    {seat.status === 'available' ? '이 자리 예약하기' : '이 자리에 대기 걸기'}
+                                    {seat.status === 'available' ? t.reserveThis : t.waitThis}
                                 </button>
                             )}
                         </div>
@@ -489,12 +592,18 @@
 
         // --- Order & Chat View ---
         function OrderView({ menus, tables, storeInfo }) {
-            const [msgs, setMsgs] = useState([{ sender: 'bot', text: '안녕하세요! 라 테라짜 키친입니다.\n메뉴 추천이나 스마트 주문을 도와드릴까요?', cards: [] }]);
+            const { t, language } = useLocale();
+            const [msgs, setMsgs] = useState([{ sender: 'bot', text: t.greeting, cards: [] }]);
             const [input, setInput] = useState('');
             const [isSending, setIsSending] = useState(false);
             const endRef = useRef(null);
             const chatContainerRef = useRef(null);
             const isAtBottomRef = useRef(true);
+
+            useEffect(() => {
+                setMsgs([{ sender: 'bot', text: t.greeting, cards: [] }]);
+                setInput('');
+            }, [language]);
 
             // Track user scroll position; only auto-scroll when user is near the bottom
             useEffect(() => {
@@ -523,61 +632,25 @@
                 setIsSending(true);
                 
                 try {
-                    const q = query.toLowerCase();
-                    const closeKeywords = /클로즈|마감|영업종료|영업 종료|마지막 주문|라스트오더|라스트 오더|라스트오더시간|마감시간/;
-                    if (closeKeywords.test(q)) {
-                        const hoursText = storeInfo?.hours || storeInfo?.business_hours || '';
-                        let reply = '';
-                        const m = hoursText.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
-                        if (m) {
-                            const open = m[1];
-                            const close = m[2];
-                            const [ch, cm] = close.split(':').map(Number);
-                            let date = new Date();
-                            date.setHours(ch, cm, 0, 0);
-                            date.setMinutes(date.getMinutes() - (storeInfo?.last_order_minutes || 20));
-                            const pad = n => String(n).padStart(2, '0');
-                            const lastOrder = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                            reply = `영업 시간: ${open} - ${close}\n마지막 주문(권장): ${lastOrder} (매장 정책에 따라 다를 수 있습니다)`;
-                        } else if (hoursText) {
-                            reply = `영업 시간: ${hoursText}\n마지막 주문 정보는 매장 설정에 따라 다릅니다.`;
-                        } else {
-                            reply = '죄송합니다. 현재 매장 영업시간 정보가 등록되어 있지 않습니다. 매장 관리자에게 문의해주세요.';
-                        }
-                        setMsgs(prev => [...prev, { sender: 'bot', text: reply, cards: [] }]);
-                        setIsSending(false);
-                        return;
-                    }
-
-                    // Quick local demo: if in web mode and user asks '데모' or '사진', simulate a reply with demo cards
-                    if (appMode === 'web' && /데모|사진/.test(query)) {
-                        const demoCards = menus.slice(0,2).map(m => ({ id: m.id, name: m.name?.ko || m.name, img: m.img }));
-                        setTimeout(() => {
-                            setMsgs(prev => [...prev, { sender: 'bot', text: '데모 이미지입니다. 매장에 설정된 메뉴 사진을 확인해보세요.', cards: demoCards }]);
-                            setIsSending(false);
-                        }, 600);
-                        return;
-                    }
-
                     const data = await apiFetch('/api/chat', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ query, language: 'ko', mode: appMode })
+                        body: JSON.stringify({ query, language, mode: appMode })
                     });
 
                     // Build recommended menu cards (include image and name if available)
                     const recommendedMenus = (data.recommended_menu_ids || [])
                         .map(id => menus.find(menu => menu.id === id))
                         .filter(Boolean)
-                        .map(m => ({ id: m.id, name: m.name?.ko || m.name, img: m.img }));
+                        .map(m => ({ id: m.id, name: localized(m.name, language), img: m.img }));
 
                     const recommendationText = recommendedMenus.length
-                        ? `\n\n추천 메뉴: ${recommendedMenus.map(m => m.name).join(', ')}`
+                        ? `\n\n${t.recommended}: ${recommendedMenus.map(m => m.name).join(', ')}`
                         : '';
 
                     setMsgs(prev => [...prev, { sender: 'bot', text: `${data.reply}${recommendationText}`, cards: recommendedMenus }]);
                 } catch(err) {
                     console.error('AI chat failed', err);
-                    setMsgs(prev => [...prev, { sender: 'bot', text: err.message || '네트워크 오류가 발생했습니다.', cards: [] }]);
+                    setMsgs(prev => [...prev, { sender: 'bot', text: t.networkError, cards: [] }]);
                 } finally {
                     setIsSending(false);
                 }
@@ -586,12 +659,12 @@
             return (
                 <div className="flex-1 flex flex-col bg-brand-white pb-20 relative">
                     <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100 flex items-center justify-between relative z-20">
-                        <h1 className="text-lg font-bold text-brand-green"><i className="fa-solid fa-robot mr-2"></i>AI 오더 어시스턴트</h1>
+                        <h1 className="text-lg font-bold text-brand-green"><i className="fa-solid fa-robot mr-2"></i>{t.aiTitle}</h1>
                         <span className="text-xs font-semibold bg-brand-bg px-2 py-1 rounded text-brand-textLight">Gemini AI</span>
                     </div>
 
                     <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 no-scrollbar chat-scrollable space-for-bottom bg-[url('https://www.transparenttextures.com/patterns/rice-paper-2.png')]">
-                        <div className="text-center text-xs text-gray-400 my-2">오늘 오전 11:30</div>
+                        <div className="text-center text-xs text-gray-400 my-2">{t.today}</div>
                         {msgs.map((m, i) => (
                             <div key={i} className={`flex max-w-[85%] ${m.sender==='user'?'self-end':'self-start'} animate-slide-up`}>
                                 {m.sender==='bot' && <div className="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center mr-2 shadow-sm mt-1 shrink-0"><i className="fa-solid fa-leaf text-xs"></i></div>}
@@ -604,7 +677,7 @@
                                                     {c.img ? (
                                                         <img src={c.img} alt={c.name} className="w-full h-36 object-cover cursor-pointer" onClick={() => window.showLightbox && window.showLightbox(c.img)} />
                                                     ) : (
-                                                        <div className="w-full h-36 bg-gray-100 flex items-center justify-center text-sm text-gray-500">이미지 없음</div>
+                                                        <div className="w-full h-36 bg-gray-100 flex items-center justify-center text-sm text-gray-500">{t.noImage}</div>
                                                     )}
                                                     <div className="p-2 text-sm font-semibold text-brand-textDark">{c.name}</div>
                                                 </div>
@@ -618,7 +691,7 @@
                             <div className="flex max-w-[85%] self-start animate-slide-up">
                                 <div className="w-8 h-8 rounded-full bg-brand-green text-white flex items-center justify-center mr-2 shadow-sm mt-1 shrink-0"><i className="fa-solid fa-leaf text-xs"></i></div>
                                 <div className="chat-bubble-bot text-brand-textLight px-4 py-3 text-[14px] leading-relaxed">
-                                    답변을 준비하고 있어요...
+                                    {t.preparing}
                                 </div>
                             </div>
                         )}
@@ -627,7 +700,7 @@
 
                     <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100 flex items-center gap-2 shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
                         <button type="button" className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-brand-green"><i className="fa-solid fa-plus text-lg"></i></button>
-                        <input value={input} onChange={e=>setInput(e.target.value)} type="text" className="flex-1 bg-brand-bg rounded-full px-4 py-2.5 outline-none text-sm focus:ring-2 focus:ring-brand-greenLight/50" placeholder="먹고 싶은 메뉴를 말해주세요..." />
+                        <input value={input} onChange={e=>setInput(e.target.value)} type="text" className="flex-1 bg-brand-bg rounded-full px-4 py-2.5 outline-none text-sm focus:ring-2 focus:ring-brand-greenLight/50" placeholder={t.chatPlaceholder} />
                         <button type="submit" disabled={isSending} className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${input.trim() && !isSending ? 'bg-brand-green text-white' : 'bg-gray-200 text-gray-400'}`}>
                             <i className="fa-solid fa-arrow-up"></i>
                         </button>
@@ -638,12 +711,13 @@
 
         // --- Menu View ---
         function MenuView({ menus }) {
+            const { t, language } = useLocale();
             const handleOrder = async (menu) => {
                 if (appMode === 'web') {
-                    alert('인터넷 탐색 전용 모드에서는 주문이 불가합니다. 매장을 방문해주세요!');
+                    alert(t.webNoOrder);
                     return;
                 }
-                const tableId = window.prompt("현재 앉아계신 테이블 번호를 입력하세요 (예: T12):", "T12");
+                const tableId = window.prompt(t.tablePrompt, "T12");
                 if (!tableId) return;
                 
                 try {
@@ -657,20 +731,20 @@
                             mode: appMode
                         })
                     });
-                    if(data.success) alert(data.message);
+                    if(data.success) alert(t.orderSubmitted);
                 } catch(error) {
                     console.error('Order request failed', error);
-                    alert(error.message || '네트워크 오류로 주문에 실패했습니다.');
+                    alert(t.networkError);
                 }
             };
 
             return (
                 <div className="flex-1 flex flex-col bg-brand-bg pb-20 relative">
                     <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100 flex items-center justify-between relative z-20">
-                        <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-solid fa-utensils mr-2 text-brand-green"></i>전체 메뉴</h1>
+                        <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-solid fa-utensils mr-2 text-brand-green"></i>{t.fullMenu}</h1>
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 no-scrollbar space-for-bottom">
-                        {menus.length === 0 && <div className="text-center text-brand-textLight mt-10 text-sm">등록된 메뉴가 없습니다.</div>}
+                        {menus.length === 0 && <div className="text-center text-brand-textLight mt-10 text-sm">{t.noMenus}</div>}
                         {menus.map(m => (
                             <div key={m.id} className={`bg-white rounded-2xl p-4 shadow-soft border border-gray-100 flex gap-4 ${m.isSoldOut ? 'opacity-60 grayscale' : ''}`}>
                                 <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0 shadow-inner">
@@ -678,19 +752,19 @@
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h3 className={`font-bold text-[15px] text-brand-textDark ${m.isSoldOut ? 'line-through' : ''}`}>{m.name.ko}</h3>
-                                        <div className="text-brand-green font-bold text-sm">{m.price} {m.currency}</div>
+                                        <h3 className={`font-bold text-[15px] text-brand-textDark ${m.isSoldOut ? 'line-through' : ''}`}>{localized(m.name, language)}</h3>
+                                        <div className="text-brand-green font-bold text-sm">{formatLocalizedPrice(m.price, m.currency, language)}</div>
                                     </div>
-                                    <p className="text-[11px] text-gray-400 mb-2 line-clamp-2">{m.desc.ko}</p>
+                                    <p className="text-[11px] text-gray-400 mb-2 line-clamp-2">{localized(m.desc, language)}</p>
                                     <div className="flex flex-wrap gap-1 mb-3">
-                                        {m.tags.map(t => <span key={t.ko} className="text-[9px] px-1.5 py-0.5 rounded bg-brand-greenLight/20 text-brand-green font-semibold">{t.ko}</span>)}
+                                        {m.tags.map((tag, index) => <span key={`${m.id}-${index}`} className="text-[9px] px-1.5 py-0.5 rounded bg-brand-greenLight/20 text-brand-green font-semibold">{localized(tag, language)}</span>)}
                                     </div>
                                     <button 
                                         onClick={() => handleOrder(m)}
                                         disabled={m.isSoldOut || appMode === 'web'}
                                         className={`w-full py-2 rounded-xl text-xs font-bold transition-colors shadow-sm ${m.isSoldOut || appMode === 'web' ? 'bg-gray-100 text-gray-400' : 'bg-brand-green text-white hover:bg-[#1F3D2B] active:scale-95'}`}
                                     >
-                                        {m.isSoldOut ? '품절' : appMode === 'web' ? '매장 전용 주문' : '1개 주문하기'}
+                                        {m.isSoldOut ? t.soldOut : appMode === 'web' ? t.storeOnlyOrder : t.orderOne}
                                     </button>
                                 </div>
                             </div>
@@ -700,50 +774,68 @@
             );
         }
 
-        // --- Order Status View ---
-        function OrderStatusView() {
+        // --- Combined Reservation & Order Status View ---
+        function ActivityStatusView({ menus }) {
+            const [reservations, setReservations] = useState([]);
             const [orders, setOrders] = useState([]);
             const [error, setError] = useState('');
+            const { t, language } = useLocale();
             
             useEffect(() => {
-                const loadOrders = () => apiFetch(`/api/orders?customer_session_id=${encodeURIComponent(customerSessionId)}`)
-                    .then(data => {
-                        setOrders(data);
+                const loadActivity = () => Promise.all([
+                    apiFetch(`/api/reservations?customer_session_id=${encodeURIComponent(customerSessionId)}`),
+                    apiFetch(`/api/orders?customer_session_id=${encodeURIComponent(customerSessionId)}`)
+                ]).then(([reservationData, orderData]) => {
+                        setReservations(reservationData);
+                        setOrders(orderData);
                         setError('');
                     })
                     .catch(err => {
-                        console.error('Order status load failed', err);
-                        setError(err.message);
+                        console.error('Activity status load failed', err);
+                        setError(t.loadFailed);
                     });
-                loadOrders();
-                const timer = setInterval(loadOrders, 5000);
+                loadActivity();
+                const timer = setInterval(loadActivity, 5000);
                 return () => clearInterval(timer);
             }, []);
 
             return (
                 <div className="flex-1 flex flex-col bg-brand-bg pb-20 relative">
                     <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100 flex items-center justify-between relative z-20">
-                        <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-solid fa-receipt mr-2 text-brand-green"></i>나의 주문 현황</h1>
+                        <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-regular fa-calendar-check mr-2 text-brand-green"></i>{t.myActivity}</h1>
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 no-scrollbar space-for-bottom">
                         {error && <div className="text-center text-red-500 mt-4 text-sm">{error}</div>}
-                        {orders.length === 0 && <div className="text-center text-brand-textLight mt-10 text-sm">주문 내역이 없습니다.</div>}
+                        <h2 className="font-bold text-brand-textDark mt-1"><i className="fa-regular fa-calendar-check mr-2 text-brand-green"></i>{t.reservations}</h2>
+                        {reservations.length === 0 && <div className="text-center text-brand-textLight py-5 text-sm">{t.noReservations}</div>}
+                        {reservations.map(r => (
+                            <div key={r.id} className={`bg-white rounded-2xl p-4 shadow-soft border-l-4 ${(r.status === 'reserved' || r.status === 'waiting') ? 'border-brand-gold' : r.status === 'accepted' ? 'border-brand-green' : 'border-red-400'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="font-bold text-[14px] text-brand-textDark">{r.table_id} {t.table}</h3>
+                                    <div className="text-[11px] font-bold text-gray-400">{new Date(r.created_at).toLocaleString(language)}</div>
+                                </div>
+                                <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                                    <span className="text-[11px] font-bold text-brand-textDark">{t.status}</span>
+                                    <span className={`text-[11px] font-bold px-2 py-1 rounded-md ${(r.status === 'reserved' || r.status === 'waiting') ? 'bg-brand-gold/10 text-brand-gold' : r.status === 'accepted' ? 'bg-brand-green/10 text-brand-green' : 'bg-red-400/10 text-red-500'}`}>
+                                        {(r.status === 'reserved' || r.status === 'waiting') ? t.approvalWaiting : r.status === 'accepted' ? t.approved : t.cancelled}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                        <h2 className="font-bold text-brand-textDark mt-5"><i className="fa-solid fa-receipt mr-2 text-brand-green"></i>{t.orders}</h2>
+                        {orders.length === 0 && <div className="text-center text-brand-textLight py-5 text-sm">{t.noOrders}</div>}
                         {orders.map(o => (
                             <div key={o.id} className={`bg-white rounded-2xl p-4 shadow-soft border-l-4 ${o.status === 'pending' ? 'border-brand-gold' : o.status === 'completed' ? 'border-brand-green' : 'border-red-400'}`}>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-[14px] text-brand-textDark">{o.menu_name}</h3>
-                                    <div className="text-[11px] font-bold text-gray-400">{o.created_at}</div>
+                                    <h3 className="font-bold text-[14px] text-brand-textDark">{localized(menus.find(menu => menu.id === o.menu_id)?.name, language) || o.menu_name}</h3>
+                                    <div className="text-[11px] font-bold text-gray-400">{new Date(o.created_at).toLocaleString(language)}</div>
                                 </div>
-                                <div className="text-[12px] text-gray-500 mb-2">수량: {o.quantity}개 | 총 금액: {o.total_price} {o.currency}</div>
+                                <div className="text-[12px] text-gray-500 mb-2">{t.quantity}: {o.quantity}{t.countUnit} | {t.total}: {formatLocalizedPrice(o.total_price, o.currency, language)}</div>
                                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-                                    <span className="text-[11px] font-bold text-brand-textDark"><i className="fa-solid fa-hashtag mr-1"></i>{o.table_id} 테이블</span>
-                                    {o.status === 'pending' ? (
-                                        <span className="text-[11px] bg-brand-gold/10 text-brand-gold font-bold px-2 py-1 rounded-md">조리 중</span>
-                                    ) : o.status === 'completed' ? (
-                                        <span className="text-[11px] bg-brand-green/10 text-brand-green font-bold px-2 py-1 rounded-md">서빙 완료</span>
-                                    ) : (
-                                        <span className="text-[11px] bg-red-400/10 text-red-500 font-bold px-2 py-1 rounded-md">주문 취소</span>
-                                    )}
+                                    <span className="text-[11px] font-bold text-brand-textDark">{o.table_id} {t.table}</span>
+                                    <span className={`text-[11px] font-bold px-2 py-1 rounded-md ${o.status === 'pending' ? 'bg-brand-gold/10 text-brand-gold' : o.status === 'completed' ? 'bg-brand-green/10 text-brand-green' : 'bg-red-400/10 text-red-500'}`}>
+                                        {o.status === 'pending' ? t.cooking : o.status === 'completed' ? t.served : t.orderCancelled}
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -752,48 +844,77 @@
             );
         }
 
-        // --- Reservation Status View ---
-        function ReservationStatusView() {
-            const [reservations, setReservations] = useState([]);
+        // --- Store Reviews View ---
+        function ReviewsView() {
+            const { t, language } = useLocale();
+            const [reviews, setReviews] = useState([]);
+            const [rating, setRating] = useState(5);
+            const [reviewText, setReviewText] = useState('');
+            const [photo, setPhoto] = useState('');
+            const [saving, setSaving] = useState(false);
             const [error, setError] = useState('');
-            
-            useEffect(() => {
-                const loadReservations = () => apiFetch(`/api/reservations?customer_session_id=${encodeURIComponent(customerSessionId)}`)
-                    .then(data => {
-                        setReservations(data);
-                        setError('');
-                    })
-                    .catch(err => {
-                        console.error('Reservation status load failed', err);
-                        setError(err.message);
+            const fileRef = useRef(null);
+
+            const loadReviews = () => apiFetch('/api/reviews')
+                .then(data => { setReviews(data); setError(''); })
+                .catch(err => { console.error('Review load failed', err); setError(t.loadFailed); });
+
+            useEffect(() => { loadReviews(); }, []);
+
+            const handlePhoto = async event => {
+                const file = event.target.files?.[0];
+                if (!file) { setPhoto(''); return; }
+                try { setPhoto(await prepareImage(file)); }
+                catch (err) { alert(t.imageError); event.target.value = ''; }
+            };
+
+            const submitReview = async event => {
+                event.preventDefault();
+                if (!reviewText.trim() || saving) return;
+                setSaving(true);
+                try {
+                    await apiFetch('/api/reviews', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ rating, review_text: reviewText.trim(), image: photo || null, customer_session_id: customerSessionId })
                     });
-                loadReservations();
-                const timer = setInterval(loadReservations, 5000);
-                return () => clearInterval(timer);
-            }, []);
+                    setReviewText(''); setRating(5); setPhoto('');
+                    if (fileRef.current) fileRef.current.value = '';
+                    await loadReviews();
+                    alert(t.reviewSaved);
+                } catch (err) {
+                    console.error('Review save failed', err);
+                    alert(t.networkError);
+                } finally { setSaving(false); }
+            };
 
             return (
                 <div className="flex-1 flex flex-col bg-brand-bg pb-20 relative">
-                    <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100 flex items-center justify-between relative z-20">
-                        <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-regular fa-calendar-check mr-2 text-brand-green"></i>나의 예약 현황</h1>
+                    <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100">
+                        <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-solid fa-star mr-2 text-brand-gold"></i>{t.storeReviews}</h1>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 no-scrollbar space-for-bottom">
-                        {error && <div className="text-center text-red-500 mt-4 text-sm">{error}</div>}
-                        {reservations.length === 0 && <div className="text-center text-brand-textLight mt-10 text-sm">진행 중인 예약 내역이 없습니다.</div>}
-                        {reservations.map(r => (
-                            <div key={r.id} className={`bg-white rounded-2xl p-4 shadow-soft border-l-4 ${(r.status === 'reserved' || r.status === 'waiting') ? 'border-brand-gold' : r.status === 'accepted' ? 'border-brand-green' : 'border-red-400'}`}>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-[14px] text-brand-textDark">{r.table_id} 테이블</h3>
-                                    <div className="text-[11px] font-bold text-gray-400">{r.created_at}</div>
-                                </div>
-                                <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-                                    <span className="text-[11px] font-bold text-brand-textDark">상태</span>
-                                    <span className={`text-[11px] font-bold px-2 py-1 rounded-md ${(r.status === 'reserved' || r.status === 'waiting') ? 'bg-brand-gold/10 text-brand-gold' : r.status === 'accepted' ? 'bg-brand-green/10 text-brand-green' : 'bg-red-400/10 text-red-500'}`}>
-                                        {(r.status === 'reserved' || r.status === 'waiting') ? '승인 대기 중' : r.status === 'accepted' ? '승인 완료' : '취소/거절됨'}
-                                    </span>
-                                </div>
+                    <div className="flex-1 overflow-y-auto p-4 no-scrollbar space-for-bottom">
+                        <form onSubmit={submitReview} className="bg-white rounded-2xl p-4 shadow-soft mb-5">
+                            <h2 className="font-bold mb-4">{t.writeReview}</h2>
+                            <label className="text-xs font-bold text-gray-500">{t.rating}</label>
+                            <div className="flex gap-2 my-2 mb-4">
+                                {[1,2,3,4,5].map(star => <button type="button" key={star} onClick={() => setRating(star)} className={`text-2xl ${star <= rating ? 'text-brand-gold' : 'text-gray-200'}`} aria-label={`${star}`}>★</button>)}
                             </div>
-                        ))}
+                            <label className="text-xs font-bold text-gray-500">{t.reviewText}</label>
+                            <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} rows="4" maxLength="2000" required placeholder={t.reviewPlaceholder} className="w-full mt-2 mb-4 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:ring-2 focus:ring-brand-greenLight/40"></textarea>
+                            <label className="text-xs font-bold text-gray-500">{t.reviewPhoto}</label>
+                            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} className="block w-full text-xs mt-2 mb-3" />
+                            {photo && <img src={photo} className="w-full h-36 object-cover rounded-xl mb-3" alt="" />}
+                            <button disabled={saving} className="w-full bg-brand-green text-white font-bold py-3 rounded-xl disabled:opacity-50">{t.submitReview}</button>
+                        </form>
+                        {error && <div className="text-center text-red-500 text-sm mb-3">{error}</div>}
+                        {reviews.length === 0 && <div className="text-center text-brand-textLight py-8 text-sm">{t.noReviews}</div>}
+                        <div className="flex flex-col gap-3">
+                            {reviews.map(review => <article key={review.id} className="bg-white rounded-2xl p-4 shadow-soft">
+                                <div className="flex justify-between mb-3"><span className="text-brand-gold tracking-wide">{'★'.repeat(review.rating)}<span className="text-gray-200">{'★'.repeat(5-review.rating)}</span></span><time className="text-[10px] text-gray-400">{new Date(review.created_at).toLocaleDateString(language)}</time></div>
+                                {review.image && <img src={review.image} className="w-full h-44 object-cover rounded-xl mb-3 cursor-pointer" onClick={() => window.showLightbox(review.image)} alt="" />}
+                                <p className="text-sm text-brand-textDark whitespace-pre-wrap">{review.review_text}</p>
+                            </article>)}
+                        </div>
                     </div>
                 </div>
             );
@@ -807,7 +928,16 @@
             const [menus, setMenus] = useState([]);
             const [tables, setTables] = useState(defaultTables);
             const [showStoreInfo, setShowStoreInfo] = useState(false);
+            const [showSettings, setShowSettings] = useState(false);
+            const [language, setLanguage] = useState(() => localStorage.getItem('qmenu_language') || 'ko');
             const [loadError, setLoadError] = useState('');
+            const t = UI_TEXT[language] || UI_TEXT.ko;
+
+            useEffect(() => {
+                localStorage.setItem('qmenu_language', language);
+                document.documentElement.lang = language;
+                document.title = `${localized(storeInfo.name_i18n || storeInfo.name, language)} | Q-Menu`;
+            }, [language, storeInfo]);
 
             useEffect(() => {
                 apiFetch('/api/store')
@@ -835,27 +965,47 @@
             // Demo fallback for web mode when no menus are returned (helps local static testing)
             useEffect(() => {
                 if (appMode === 'web' && menus.length === 0) {
-                    setMenus([{ id: 'demo_burger', name: { ko: '데모 햄버거' }, img: 'https://via.placeholder.com/420x280?text=햄버거', price: 12000, currency: 'KRW', tags: [] },
-                              { id: 'demo_chicken', name: { ko: '데모 치킨' }, img: 'https://via.placeholder.com/420x280?text=치킨', price: 15000, currency: 'KRW', tags: [] }]);
+                    setMenus([{ id: 'demo_chicken', name: { ko: '데모 치킨', en: 'Demo Chicken', vi: 'Gà mẫu' }, desc: {ko: '바삭한 치킨', en: 'Crispy chicken', vi: 'Gà giòn'}, img: 'https://via.placeholder.com/420x280?text=Chicken', price: 15000, currency: 'KRW', tags: [], isSoldOut: false }]);
                 }
             }, [menus]);
 
             return (
+                <LanguageContext.Provider value={{ language, setLanguage, t }}>
                 <div id="app-container">
                     {loadError && (
                         <div className="absolute top-0 left-0 right-0 z-[60] bg-red-600 text-white text-center text-[11px] px-3 py-2">
-                            {loadError}
+                            {t.loadFailed}
                         </div>
                     )}
+                    <button onClick={() => setShowSettings(true)} className="absolute top-3 right-3 z-40 w-9 h-9 rounded-full bg-white/95 text-brand-green shadow-md flex items-center justify-center" aria-label={t.settings}>
+                        <i className="fa-solid fa-gear"></i>
+                    </button>
                     {activeTab === 'home' && <HomeView tables={tables} onSeatClick={setSelectedSeat} storeInfo={storeInfo} onShowStoreInfo={() => setShowStoreInfo(true)} />}
-                    {activeTab === 'reservation' && <ReservationStatusView />}
+                    {activeTab === 'reservation' && <ActivityStatusView menus={menus} />}
                     {activeTab === 'chat' && <OrderView menus={menus} tables={tables} storeInfo={storeInfo} />}
                     {activeTab === 'menu' && <MenuView menus={menus} />}
-                    {activeTab === 'order-status' && <OrderStatusView />}
+                    {activeTab === 'reviews' && <ReviewsView />}
 
                     <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
                     
                     <BottomSheet seat={selectedSeat} onClose={() => setSelectedSeat(null)} />
+
+                    {showSettings && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 animate-fade-in" onClick={() => setShowSettings(false)}>
+                            <div className="bg-white rounded-3xl p-6 w-[84%] max-w-sm shadow-2xl" onClick={e=>e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-5">
+                                    <h2 className="text-xl font-bold"><i className="fa-solid fa-gear mr-2 text-brand-green"></i>{t.settings}</h2>
+                                    <button onClick={() => setShowSettings(false)} className="w-8 h-8 rounded-full bg-gray-100">×</button>
+                                </div>
+                                <label className="text-sm font-bold text-brand-textDark">{t.language}</label>
+                                <p className="text-[11px] text-brand-textLight mt-1 mb-3">{t.languageDesc}</p>
+                                <select value={language} onChange={e=>setLanguage(e.target.value)} className="w-full bg-brand-bg rounded-xl px-4 py-3 outline-none font-bold mb-5">
+                                    {LANGUAGE_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+                                </select>
+                                <button onClick={() => setShowSettings(false)} className="w-full bg-brand-textDark text-white font-bold py-3 rounded-xl">{t.close}</button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Store Info Modal */}
                     {showStoreInfo && (
@@ -865,18 +1015,19 @@
                                     <div className="w-16 h-16 rounded-full bg-brand-green/10 text-brand-green mx-auto flex items-center justify-center mb-3">
                                         <i className="fa-solid fa-store text-3xl"></i>
                                     </div>
-                                    <h2 className="text-xl font-bold text-brand-textDark mb-1">{storeInfo.name}</h2>
-                                    <p className="text-[13px] text-brand-textLight">{storeInfo.description}</p>
+                                    <h2 className="text-xl font-bold text-brand-textDark mb-1">{localized(storeInfo.name_i18n || storeInfo.name, language)}</h2>
+                                    <p className="text-[13px] text-brand-textLight">{localized(storeInfo.description_i18n || storeInfo.description, language)}</p>
                                 </div>
                                 <div className="bg-brand-bg rounded-xl p-4 mb-6 text-center">
-                                    <div className="text-[11px] text-gray-500 mb-1 font-bold">운영 시간</div>
-                                    <div className="font-bold text-sm text-brand-green">{storeInfo.hours}</div>
+                                    <div className="text-[11px] text-gray-500 mb-1 font-bold">{t.hours}</div>
+                                    <div className="font-bold text-sm text-brand-green">{localized(storeInfo.hours_i18n || storeInfo.hours, language)}</div>
                                 </div>
-                                <button onClick={() => setShowStoreInfo(false)} className="w-full bg-brand-textDark text-white font-bold py-3 rounded-xl transition active:scale-95">닫기</button>
+                                <button onClick={() => setShowStoreInfo(false)} className="w-full bg-brand-textDark text-white font-bold py-3 rounded-xl transition active:scale-95">{t.close}</button>
                             </div>
                         </div>
                     )}
                 </div>
+                </LanguageContext.Provider>
             );
         }
 
