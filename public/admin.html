@@ -119,8 +119,9 @@
         .seat-bar { position: absolute; top: 1rem; right: 1.2rem; width: 40%; height: 3.4rem; background: #f0f0f0; border: 2px solid #d0d0d0; border-radius: 0 0 1rem 1rem; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #6b7280; font-weight: 700; box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
         .seat-floor-terrace { position: absolute; right: 0; top: 0; width: 30%; height: 100%; background: linear-gradient(135deg, #c8b595, #a88b62); border-left: 6px solid #4c6a46; }
         .seat-terrace-label { position: absolute; top: 0.6rem; left: 50%; transform: translateX(-50%); background: #334d30; color: white; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 700; z-index: 3; }
-        .seat-node { position: absolute; transform: translate(-50%, -50%); border: none; cursor: grab; border-radius: 999px; padding: 0.6rem 0.8rem; font-size: 0.8rem; font-weight: 700; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.25); transition: transform 0.15s ease, box-shadow 0.15s ease; z-index: 3; }
+        .seat-node { position: absolute; transform: translate(-50%, -50%); border: none; cursor: pointer; border-radius: 999px; padding: 0.6rem 0.8rem; font-size: 0.8rem; font-weight: 700; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.25); transition: transform 0.15s ease, box-shadow 0.15s ease; z-index: 3; }
         .seat-node:active { cursor: grabbing; }
+        .seat-node.edit-mode { cursor: grab; }
         .seat-node.selected { outline: 2px solid var(--accent-glow); box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.2); }
         .seat-node[data-status="available"] { background: linear-gradient(135deg, #34d399, #10b981); }
         .seat-node[data-status="soon"] { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
@@ -295,6 +296,7 @@
             <div class="card-container">
                 <div class="seat-layout-toolbar">
                     <button class="btn" style="width:auto; padding:0.75rem 1.25rem;" onclick="saveSeatLayout()" data-i18n="save">저장하기</button>
+                    <button id="seat-position-edit-btn" class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#3b82f6;" onclick="toggleSeatPositionEdit()" data-i18n="seat_position_edit">좌석 위치 수정</button>
                     <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#64748b;" onclick="resetSeatLayout()" data-i18n="reset_seats">기본값 복원</button>
                     <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#0f766e;" onclick="addSeat()" data-i18n="add_seat">+ 새 좌석 추가</button>
                     <button class="btn" style="width:auto; padding:0.75rem 1.25rem; background:#ef4444;" onclick="deleteSelectedSeat()" data-i18n="delete_seat">선택 좌석 삭제</button>
@@ -396,7 +398,7 @@
                 dash_title:'스토어 관제 대시보드', dash_desc:'실시간 주문 현황을 확인하고 처리합니다.', live_orders:'실시간 주문 현황', live_reservations:'실시간 예약 현황',
                 store_title:'매장 정보 관리', store_desc:'앱 상단에 표시되는 매장 이름과 운영시간 등의 정보를 관리합니다.', store_name_ko:'매장 이름 (한국어)', store_name_en:'매장 이름 (영어, 비워두면 자동 번역)', store_hours_ko:'운영 시간 및 휴무일 (한국어)', store_hours_en:'운영 시간 (영어, 비워두면 자동 번역)', store_description_ko:'매장 설명 (한국어)', store_description_en:'매장 설명 (영어, 비워두면 자동 번역)', save:'저장하기',
                 menu_title:'메뉴 및 AI 태그 관리', menu_desc:'메뉴 설명과 핵심 키워드를 AI 추천 엔진에 반영합니다.', menu_add:'메뉴 등록', lbl_img:'메뉴 사진', lbl_name:'메뉴명 (한국어)', lbl_name_en:'메뉴명 (영어, 비워두면 자동 번역)', lbl_price:'가격', lbl_desc:'메뉴 설명 (한국어)', lbl_desc_en:'메뉴 설명 (영어, 비워두면 자동 번역)', lbl_tags:'추천 키워드 선택', btn_submit:'메뉴 등록하기', cancel:'취소', menu_list:'등록된 메뉴', btn_delete:'선택 삭제', keyword_manage:'추천 키워드 관리', keyword_placeholder:'예: #혼밥', add:'추가', th_img:'사진', th_name:'메뉴', th_price:'가격', th_desc:'설명', th_tags:'키워드', th_status:'상태',
-                seats_title:'좌석 배치 관리', seats_desc:'좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.', reset_seats:'기본값 복원', add_seat:'+ 새 좌석 추가', delete_seat:'선택 좌석 삭제', seats_hint:'* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.', edit_table:'테이블 상세 설정', table_name:'테이블 이름', status:'상태', view:'뷰', tag:'태그', capacity:'최대 인원', table_photo:'테이블 사진', view_photo:'뷰 사진', image_max_5mb:'원본 파일 최대 5MB (저장 시 자동 압축)', apply:'적용',
+                seats_title:'좌석 배치 관리', seats_desc:'좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.', reset_seats:'기본값 복원', add_seat:'+ 새 좌석 추가', delete_seat:'선택 좌석 삭제', seat_position_edit:'좌석 위치 수정', seat_position_edit_active:'수정 중', seats_hint:'* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.', edit_table:'테이블 상세 설정', table_name:'테이블 이름', status:'상태', view:'뷰', tag:'태그', capacity:'최대 인원', table_photo:'테이블 사진', view_photo:'뷰 사진', image_max_5mb:'원본 파일 최대 5MB (저장 시 자동 압축)', apply:'적용',
                 qr_title:'라우팅 QR 시스템', qr_desc:'외부 배포용과 내부 매장용 QR을 분리하여 발급합니다.', qr_external:'인터넷 배포용 (메뉴 탐색 전용)', qr_external_desc:'주문 및 예약 기능이 비활성화되며, AI와 메뉴 추천 대화만 가능합니다.', qr_internal:'가게 전용 (테이블 오더용)', qr_internal_desc:'좌석 실시간 예약 및 AI 오더 주문 처리가 가능합니다.', copy_url:'URL 복사',
                 set_title:'설정', set_desc:'관리자 화면의 언어와 테마를 변경합니다.', set_theme:'다크 모드 / 라이트 모드', theme_label:'라이트 모드 켜기', admin_language:'관리자 언어',
                 no_orders:'현재 들어온 주문이 없습니다.', reject_order:'주문 거부', rejected:'거부됨', table:'테이블', order_time:'주문 시간', quantity:'수량', total:'총 금액', complete_order:'조리 완료', completed:'완료됨', no_reservations:'현재 들어온 예약 요청이 없습니다.', reservation_request:'예약 요청', waiting_request:'웨이팅 요청', request_time:'요청 시간', party_size:'예약 인원', people:'명', accept_reservation:'예약 승인', reject_reservation:'거절/취소', accepted_reservation:'승인 완료', cancelled_reservation:'취소됨', edit:'수정', resume:'판매 재개', mark_soldout:'품절 처리', no_image:'사진 없음', selected:'선택됨', no_seats:'좌석이 없습니다. 새 좌석을 추가해 보세요.', floor_plan:'매장 평면도', kitchen:'주방', restroom:'화장실', bar:'바 / 카운터', terrace:'테라스'
@@ -430,6 +432,7 @@
             document.title = `Q-menu Admin | ${tr('nav_dashboard')}`;
             document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = tr(el.dataset.i18n); });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = tr(el.dataset.i18nPlaceholder); });
+            updateSeatEditModeButton();
             const languageSelect = document.getElementById('admin-language');
             if (languageSelect) languageSelect.value = adminLanguage;
         }
@@ -464,6 +467,7 @@
         let selectedSeatIndex = -1;
         let draggingSeatIndex = -1;
         let seatWasDragged = false;
+        let seatPositionEditMode = false;
         let pendingTableImage = '';
         let pendingViewImage = '';
 
@@ -527,11 +531,12 @@
             `;
 
             canvas.querySelectorAll('.seat-node').forEach(node => {
+                node.classList.toggle('edit-mode', seatPositionEditMode);
                 node.addEventListener('click', (event) => {
                     event.stopPropagation();
                     const index = parseInt(node.dataset.index, 10);
                     selectSeat(index);
-                    if (!seatWasDragged) openSeatModal(index);
+                    if (!seatWasDragged && !seatPositionEditMode) openSeatModal(index);
                 });
                 node.addEventListener('pointerdown', handleSeatPointerDown);
             });
@@ -588,6 +593,21 @@
             seat.view_image = pendingViewImage;
             renderSeatLayoutEditor();
             closeSeatModal();
+        }
+
+        function updateSeatEditModeButton() {
+            const button = document.getElementById('seat-position-edit-btn');
+            if (!button) return;
+            button.classList.toggle('active', seatPositionEditMode);
+            button.dataset.i18n = seatPositionEditMode ? 'seat_position_edit_active' : 'seat_position_edit';
+            button.textContent = tr(button.dataset.i18n);
+            button.style.background = seatPositionEditMode ? '#0f766e' : '#3b82f6';
+        }
+
+        function toggleSeatPositionEdit() {
+            seatPositionEditMode = !seatPositionEditMode;
+            updateSeatEditModeButton();
+            renderSeatLayoutEditor();
         }
 
         function openSeatModal(index) {
@@ -649,6 +669,7 @@
         }
 
         function handleSeatPointerDown(event) {
+            if (!seatPositionEditMode) return;
             const node = event.currentTarget;
             const index = parseInt(node.dataset.index, 10);
             selectSeat(index);
