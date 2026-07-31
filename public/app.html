@@ -196,7 +196,14 @@
         .floor-plan-restroom { position: absolute; top: 0; left: 96px; width: 64px; height: 80px; }
         .floor-plan-bar { position: absolute; top: 16px; right: 40px; width: 160px; height: 48px; }
 
-        .review-textarea { resize: none; overflow-y: hidden; min-height: 92px; }
+        .review-textarea {
+            width: 100%;
+            height: 92px;
+            min-height: 92px;
+            max-height: 92px;
+            resize: none;
+            overflow-y: auto;
+        }
         .rating-star { position: relative; width: 32px; height: 32px; line-height: 32px; }
         .rating-star-base, .rating-star-fill { position: absolute; inset: 0; font-size: 28px; line-height: 32px; }
         .rating-star-base { color: #e5e7eb; }
@@ -898,6 +905,7 @@
         function ActivityStatusView({ menus }) {
             const [reservations, setReservations] = useState([]);
             const [orders, setOrders] = useState([]);
+            const [activityCategory, setActivityCategory] = useState('reservations');
             const [error, setError] = useState('');
             const { t, language } = useLocale();
             
@@ -924,11 +932,23 @@
                     <div className="bg-white px-5 py-4 pt-12 shadow-sm border-b border-gray-100 flex items-center justify-between relative z-20">
                         <h1 className="text-lg font-bold text-brand-textDark"><i className="fa-regular fa-calendar-check mr-2 text-brand-green"></i>{t.myActivity}</h1>
                     </div>
+                    <div className="grid grid-cols-2 gap-2 px-4 pt-4" role="tablist" aria-label={t.myActivity}>
+                        <button type="button" role="tab" aria-selected={activityCategory === 'reservations'} onClick={() => setActivityCategory('reservations')} className={`h-11 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-colors ${activityCategory === 'reservations' ? 'bg-brand-green text-white shadow-md' : 'bg-white text-brand-textDark'}`}>
+                            <i className="fa-regular fa-calendar-check"></i>
+                            <span>{t.reservations}</span>
+                            <span className={`min-w-5 h-5 px-1 rounded-full flex items-center justify-center text-[10px] ${activityCategory === 'reservations' ? 'bg-white/20' : 'bg-brand-bg text-brand-green'}`}>{reservations.length}</span>
+                        </button>
+                        <button type="button" role="tab" aria-selected={activityCategory === 'orders'} onClick={() => setActivityCategory('orders')} className={`h-11 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-colors ${activityCategory === 'orders' ? 'bg-brand-green text-white shadow-md' : 'bg-white text-brand-textDark'}`}>
+                            <i className="fa-solid fa-receipt"></i>
+                            <span>{t.orders}</span>
+                            <span className={`min-w-5 h-5 px-1 rounded-full flex items-center justify-center text-[10px] ${activityCategory === 'orders' ? 'bg-white/20' : 'bg-brand-bg text-brand-green'}`}>{orders.length}</span>
+                        </button>
+                    </div>
                     <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 no-scrollbar space-for-bottom">
                         {error && <div className="text-center text-red-500 mt-4 text-sm">{error}</div>}
-                        <h2 className="font-bold text-brand-textDark mt-1"><i className="fa-regular fa-calendar-check mr-2 text-brand-green"></i>{t.reservations}</h2>
-                        {reservations.length === 0 && <div className="text-center text-brand-textLight py-5 text-sm">{t.noReservations}</div>}
-                        {reservations.map(r => (
+                        {activityCategory === 'reservations' && <React.Fragment>
+                            {reservations.length === 0 && <div className="text-center text-brand-textLight py-8 text-sm">{t.noReservations}</div>}
+                            {reservations.map(r => (
                             <div key={r.id} className={`bg-white rounded-2xl p-4 shadow-soft border-l-4 ${(r.status === 'reserved' || r.status === 'waiting') ? 'border-brand-gold' : r.status === 'accepted' ? 'border-brand-green' : 'border-red-400'}`}>
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-bold text-[14px] text-brand-textDark">{r.table_id} {t.table}</h3>
@@ -941,10 +961,11 @@
                                     </span>
                                 </div>
                             </div>
-                        ))}
-                        <h2 className="font-bold text-brand-textDark mt-5"><i className="fa-solid fa-receipt mr-2 text-brand-green"></i>{t.orders}</h2>
-                        {orders.length === 0 && <div className="text-center text-brand-textLight py-5 text-sm">{t.noOrders}</div>}
-                        {orders.map(o => (
+                            ))}
+                        </React.Fragment>}
+                        {activityCategory === 'orders' && <React.Fragment>
+                            {orders.length === 0 && <div className="text-center text-brand-textLight py-8 text-sm">{t.noOrders}</div>}
+                            {orders.map(o => (
                             <div key={o.id} className={`bg-white rounded-2xl p-4 shadow-soft border-l-4 ${o.status === 'pending' ? 'border-brand-gold' : o.status === 'completed' ? 'border-brand-green' : 'border-red-400'}`}>
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-bold text-[14px] text-brand-textDark">{localized(menus.find(menu => menu.id === o.menu_id)?.name, language) || o.menu_name}</h3>
@@ -958,7 +979,8 @@
                                     </span>
                                 </div>
                             </div>
-                        ))}
+                            ))}
+                        </React.Fragment>}
                     </div>
                 </div>
             );
@@ -997,7 +1019,6 @@
             const [saving, setSaving] = useState(false);
             const [error, setError] = useState('');
             const fileRef = useRef(null);
-            const reviewTextRef = useRef(null);
 
             const loadReviews = () => apiFetch('/api/reviews')
                 .then(data => { setReviews(data); setError(''); })
@@ -1012,12 +1033,6 @@
                 catch (err) { alert(t.imageError); event.target.value = ''; }
             };
 
-            const handleReviewText = event => {
-                setReviewText(event.target.value);
-                event.target.style.height = 'auto';
-                event.target.style.height = `${event.target.scrollHeight}px`;
-            };
-
             const submitReview = async event => {
                 event.preventDefault();
                 if (!reviewText.trim() || saving) return;
@@ -1029,7 +1044,6 @@
                     });
                     setReviewText(''); setRating(5); setPhoto('');
                     if (fileRef.current) fileRef.current.value = '';
-                    if (reviewTextRef.current) reviewTextRef.current.style.height = '';
                     await loadReviews();
                     alert(t.reviewSaved);
                 } catch (err) {
@@ -1053,7 +1067,7 @@
                                 <RatingStars value={rating} onChange={setRating} />
                             </div>
                             <label className="text-xs font-bold text-gray-500">{t.reviewText}</label>
-                            <textarea ref={reviewTextRef} value={reviewText} onChange={handleReviewText} rows="3" maxLength="2000" required placeholder={t.reviewPlaceholder} className="review-textarea w-full mt-2 mb-4 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:ring-2 focus:ring-brand-greenLight/40"></textarea>
+                            <textarea value={reviewText} onChange={event=>setReviewText(event.target.value)} rows="3" maxLength="2000" required placeholder={t.reviewPlaceholder} className="review-textarea mt-2 mb-4 rounded-xl border border-gray-200 p-3 text-sm outline-none focus:ring-2 focus:ring-brand-greenLight/40"></textarea>
                             <label className="text-xs font-bold text-gray-500">{t.reviewPhoto}</label>
                             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} className="block w-full text-xs mt-2 mb-3" />
                             <p className="-mt-1 mb-3 text-[10px] text-gray-400">{t.reviewPhotoHint}</p>
