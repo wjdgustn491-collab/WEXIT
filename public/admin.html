@@ -303,8 +303,8 @@
                 <div class="seat-layout-workspace">
                     <div id="seat-layout-canvas" class="seat-layout-canvas"></div>
                     <div class="seat-layout-sidebar">
-                        <h2><i class="fa-solid fa-list-check"></i> <span data-i18n="live_orders">실시간 주문 현황</span></h2>
-                        <div id="seat-orders-list"></div>
+                        <h2><i class="fa-solid fa-calendar-check"></i> <span data-i18n="live_reservations">실시간 예약 현황</span></h2>
+                        <div id="seat-reservations-list"></div>
                     </div>
                 </div>
             </div>
@@ -378,8 +378,8 @@
             <div class="form-group"><label data-i18n="tag">태그</label><input type="text" id="seat-tag-input" class="form-control"></div>
             <div class="form-group"><label data-i18n="capacity">최대 인원</label><input type="number" id="seat-capacity-input" class="form-control" min="1" max="50"></div>
             <div class="image-preview-grid">
-                <div><label data-i18n="table_photo">테이블 사진</label><input type="file" id="seat-table-image-input" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewSeatImage(this, 'table')"><img id="seat-table-image-preview" class="image-preview" alt=""></div>
-                <div><label data-i18n="view_photo">뷰 사진</label><input type="file" id="seat-view-image-input" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewSeatImage(this, 'view')"><img id="seat-view-image-preview" class="image-preview" alt=""></div>
+                <div><label data-i18n="table_photo">테이블 사진</label><input type="file" id="seat-table-image-input" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewSeatImage(this, 'table')"><small style="display:block; margin-top:0.35rem; color:var(--text-secondary);" data-i18n="image_max_5mb">원본 파일 최대 5MB (저장 시 자동 압축)</small><img id="seat-table-image-preview" class="image-preview" alt=""></div>
+                <div><label data-i18n="view_photo">뷰 사진</label><input type="file" id="seat-view-image-input" class="form-control" accept="image/jpeg,image/png,image/webp" onchange="previewSeatImage(this, 'view')"><small style="display:block; margin-top:0.35rem; color:var(--text-secondary);" data-i18n="image_max_5mb">원본 파일 최대 5MB (저장 시 자동 압축)</small><img id="seat-view-image-preview" class="image-preview" alt=""></div>
             </div>
             <div style="display:flex; gap:0.75rem;">
                 <button type="button" class="btn" onclick="applySeatEditorValues()" data-i18n="apply">적용</button>
@@ -393,33 +393,33 @@
         const ADMIN_TEXT = {
             ko: {
                 nav_dashboard:'대시보드', nav_seats:'좌석 배치 관리', nav_store:'매장 정보 관리', nav_menu:'메뉴 및 AI 태그 관리', nav_qr:'라우팅 QR 시스템', nav_settings:'설정',
-                dash_title:'스토어 관제 대시보드', dash_desc:'실시간 주문 현황을 확인하고 처리합니다.', live_orders:'실시간 주문 현황',
+                dash_title:'스토어 관제 대시보드', dash_desc:'실시간 주문 현황을 확인하고 처리합니다.', live_orders:'실시간 주문 현황', live_reservations:'실시간 예약 현황',
                 store_title:'매장 정보 관리', store_desc:'앱 상단에 표시되는 매장 이름과 운영시간 등의 정보를 관리합니다.', store_name_ko:'매장 이름 (한국어)', store_name_en:'매장 이름 (영어, 비워두면 자동 번역)', store_hours_ko:'운영 시간 및 휴무일 (한국어)', store_hours_en:'운영 시간 (영어, 비워두면 자동 번역)', store_description_ko:'매장 설명 (한국어)', store_description_en:'매장 설명 (영어, 비워두면 자동 번역)', save:'저장하기',
                 menu_title:'메뉴 및 AI 태그 관리', menu_desc:'메뉴 설명과 핵심 키워드를 AI 추천 엔진에 반영합니다.', menu_add:'메뉴 등록', lbl_img:'메뉴 사진', lbl_name:'메뉴명 (한국어)', lbl_name_en:'메뉴명 (영어, 비워두면 자동 번역)', lbl_price:'가격', lbl_desc:'메뉴 설명 (한국어)', lbl_desc_en:'메뉴 설명 (영어, 비워두면 자동 번역)', lbl_tags:'추천 키워드 선택', btn_submit:'메뉴 등록하기', cancel:'취소', menu_list:'등록된 메뉴', btn_delete:'선택 삭제', keyword_manage:'추천 키워드 관리', keyword_placeholder:'예: #혼밥', add:'추가', th_img:'사진', th_name:'메뉴', th_price:'가격', th_desc:'설명', th_tags:'키워드', th_status:'상태',
-                seats_title:'좌석 배치 관리', seats_desc:'좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.', reset_seats:'기본값 복원', add_seat:'+ 새 좌석 추가', delete_seat:'선택 좌석 삭제', seats_hint:'* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.', edit_table:'테이블 상세 설정', table_name:'테이블 이름', status:'상태', view:'뷰', tag:'태그', capacity:'최대 인원', table_photo:'테이블 사진', view_photo:'뷰 사진', apply:'적용',
+                seats_title:'좌석 배치 관리', seats_desc:'좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.', reset_seats:'기본값 복원', add_seat:'+ 새 좌석 추가', delete_seat:'선택 좌석 삭제', seats_hint:'* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.', edit_table:'테이블 상세 설정', table_name:'테이블 이름', status:'상태', view:'뷰', tag:'태그', capacity:'최대 인원', table_photo:'테이블 사진', view_photo:'뷰 사진', image_max_5mb:'원본 파일 최대 5MB (저장 시 자동 압축)', apply:'적용',
                 qr_title:'라우팅 QR 시스템', qr_desc:'외부 배포용과 내부 매장용 QR을 분리하여 발급합니다.', qr_external:'인터넷 배포용 (메뉴 탐색 전용)', qr_external_desc:'주문 및 예약 기능이 비활성화되며, AI와 메뉴 추천 대화만 가능합니다.', qr_internal:'가게 전용 (테이블 오더용)', qr_internal_desc:'좌석 실시간 예약 및 AI 오더 주문 처리가 가능합니다.', copy_url:'URL 복사',
                 set_title:'설정', set_desc:'관리자 화면의 언어와 테마를 변경합니다.', set_theme:'다크 모드 / 라이트 모드', theme_label:'라이트 모드 켜기', admin_language:'관리자 언어',
-                no_orders:'현재 들어온 주문이 없습니다.', table:'테이블', order_time:'주문 시간', quantity:'수량', total:'총 금액', complete_order:'조리 완료', completed:'완료됨', edit:'수정', resume:'판매 재개', mark_soldout:'품절 처리', no_image:'사진 없음', selected:'선택됨', no_seats:'좌석이 없습니다. 새 좌석을 추가해 보세요.', floor_plan:'매장 평면도', kitchen:'주방', restroom:'화장실', bar:'바 / 카운터', terrace:'테라스'
+                no_orders:'현재 들어온 주문이 없습니다.', reject_order:'주문 거부', rejected:'거부됨', table:'테이블', order_time:'주문 시간', quantity:'수량', total:'총 금액', complete_order:'조리 완료', completed:'완료됨', no_reservations:'현재 들어온 예약 요청이 없습니다.', reservation_request:'예약 요청', waiting_request:'웨이팅 요청', request_time:'요청 시간', party_size:'예약 인원', people:'명', accept_reservation:'예약 승인', reject_reservation:'거절/취소', accepted_reservation:'승인 완료', cancelled_reservation:'취소됨', edit:'수정', resume:'판매 재개', mark_soldout:'품절 처리', no_image:'사진 없음', selected:'선택됨', no_seats:'좌석이 없습니다. 새 좌석을 추가해 보세요.', floor_plan:'매장 평면도', kitchen:'주방', restroom:'화장실', bar:'바 / 카운터', terrace:'테라스'
             },
             en: {
                 nav_dashboard:'Dashboard', nav_seats:'Seating Layout', nav_store:'Store Information', nav_menu:'Menu & AI Tags', nav_qr:'Routing QR System', nav_settings:'Settings',
-                dash_title:'Store Operations Dashboard', dash_desc:'View and process orders in real time.', live_orders:'Live Orders',
+                dash_title:'Store Operations Dashboard', dash_desc:'View and process orders in real time.', live_orders:'Live Orders', live_reservations:'Live Reservations',
                 store_title:'Store Information', store_desc:'Manage the store name, hours, and description shown in the app.', store_name_ko:'Store Name (Korean)', store_name_en:'Store Name (English, auto-translated if blank)', store_hours_ko:'Hours & Holidays (Korean)', store_hours_en:'Hours (English, auto-translated if blank)', store_description_ko:'Description (Korean)', store_description_en:'Description (English, auto-translated if blank)', save:'Save',
                 menu_title:'Menu & AI Tag Management', menu_desc:'Apply menu descriptions and keywords to AI recommendations.', menu_add:'Add Menu', lbl_img:'Menu Photo', lbl_name:'Menu Name (Korean)', lbl_name_en:'Menu Name (English, auto-translated if blank)', lbl_price:'Price', lbl_desc:'Description (Korean)', lbl_desc_en:'Description (English, auto-translated if blank)', lbl_tags:'Recommendation Keywords', btn_submit:'Add Menu', cancel:'Cancel', menu_list:'Registered Menus', btn_delete:'Delete Selected', keyword_manage:'Keyword Management', keyword_placeholder:'e.g. #solo-dining', add:'Add', th_img:'Photo', th_name:'Menu', th_price:'Price', th_desc:'Description', th_tags:'Keywords', th_status:'Status',
-                seats_title:'Seating Layout', seats_desc:'Drag tables to arrange them and click a table to edit details.', reset_seats:'Restore Defaults', add_seat:'+ Add Table', delete_seat:'Delete Selected', seats_hint:'* Save and refresh the customer app to apply changes.', edit_table:'Table Details', table_name:'Table Name', status:'Status', view:'View', tag:'Tag', capacity:'Capacity', table_photo:'Table Photo', view_photo:'View Photo', apply:'Apply',
+                seats_title:'Seating Layout', seats_desc:'Drag tables to arrange them and click a table to edit details.', reset_seats:'Restore Defaults', add_seat:'+ Add Table', delete_seat:'Delete Selected', seats_hint:'* Save and refresh the customer app to apply changes.', edit_table:'Table Details', table_name:'Table Name', status:'Status', view:'View', tag:'Tag', capacity:'Capacity', table_photo:'Table Photo', view_photo:'View Photo', image_max_5mb:'Original file up to 5MB (compressed when saved)', apply:'Apply',
                 qr_title:'Routing QR System', qr_desc:'Issue separate QR codes for public and in-store use.', qr_external:'Public (Menu Browsing)', qr_external_desc:'Ordering and reservations are disabled; AI menu chat remains available.', qr_internal:'In-store (Table Ordering)', qr_internal_desc:'Enables live reservations and AI-assisted ordering.', copy_url:'Copy URL',
                 set_title:'Settings', set_desc:'Change the admin language and theme.', set_theme:'Dark / Light Mode', theme_label:'Turn on light mode', admin_language:'Admin Language',
-                no_orders:'There are no incoming orders.', table:'Table', order_time:'Order time', quantity:'Qty', total:'Total', complete_order:'Complete', completed:'Completed', edit:'Edit', resume:'Resume Sales', mark_soldout:'Mark Sold Out', no_image:'No Image', selected:'selected', no_seats:'No tables. Add a new table.', floor_plan:'Store Floor Plan', kitchen:'Kitchen', restroom:'Restroom', bar:'Bar / Counter', terrace:'Terrace'
+                no_orders:'There are no incoming orders.', reject_order:'Reject Order', rejected:'Rejected', table:'Table', order_time:'Order time', quantity:'Qty', total:'Total', complete_order:'Complete', completed:'Completed', no_reservations:'There are no incoming reservation requests.', reservation_request:'Reservation Request', waiting_request:'Waitlist Request', request_time:'Request time', party_size:'Party size', people:'people', accept_reservation:'Accept', reject_reservation:'Reject/Cancel', accepted_reservation:'Accepted', cancelled_reservation:'Cancelled', edit:'Edit', resume:'Resume Sales', mark_soldout:'Mark Sold Out', no_image:'No Image', selected:'selected', no_seats:'No tables. Add a new table.', floor_plan:'Store Floor Plan', kitchen:'Kitchen', restroom:'Restroom', bar:'Bar / Counter', terrace:'Terrace'
             },
             vi: {
                 nav_dashboard:'Bảng điều khiển', nav_seats:'Quản lý sơ đồ bàn', nav_store:'Thông tin cửa hàng', nav_menu:'Thực đơn & thẻ AI', nav_qr:'Hệ thống QR', nav_settings:'Cài đặt',
-                dash_title:'Bảng điều khiển cửa hàng', dash_desc:'Xem và xử lý đơn hàng theo thời gian thực.', live_orders:'Đơn hàng trực tiếp',
+                dash_title:'Bảng điều khiển cửa hàng', dash_desc:'Xem và xử lý đơn hàng theo thời gian thực.', live_orders:'Đơn hàng trực tiếp', live_reservations:'Đặt bàn trực tiếp',
                 store_title:'Thông tin cửa hàng', store_desc:'Quản lý tên, giờ mở cửa và mô tả hiển thị trong ứng dụng.', store_name_ko:'Tên cửa hàng (Tiếng Hàn)', store_name_en:'Tên cửa hàng (Tiếng Anh, tự dịch nếu để trống)', store_hours_ko:'Giờ & ngày nghỉ (Tiếng Hàn)', store_hours_en:'Giờ mở cửa (Tiếng Anh, tự dịch nếu để trống)', store_description_ko:'Mô tả (Tiếng Hàn)', store_description_en:'Mô tả (Tiếng Anh, tự dịch nếu để trống)', save:'Lưu',
                 menu_title:'Quản lý thực đơn & thẻ AI', menu_desc:'Áp dụng mô tả và từ khóa vào gợi ý AI.', menu_add:'Thêm món', lbl_img:'Ảnh món', lbl_name:'Tên món (Tiếng Hàn)', lbl_name_en:'Tên món (Tiếng Anh, tự dịch nếu để trống)', lbl_price:'Giá', lbl_desc:'Mô tả (Tiếng Hàn)', lbl_desc_en:'Mô tả (Tiếng Anh, tự dịch nếu để trống)', lbl_tags:'Từ khóa gợi ý', btn_submit:'Thêm món', cancel:'Hủy', menu_list:'Món đã đăng ký', btn_delete:'Xóa mục đã chọn', keyword_manage:'Quản lý từ khóa', keyword_placeholder:'VD: #ăn-một-mình', add:'Thêm', th_img:'Ảnh', th_name:'Món', th_price:'Giá', th_desc:'Mô tả', th_tags:'Từ khóa', th_status:'Trạng thái',
-                seats_title:'Quản lý sơ đồ bàn', seats_desc:'Kéo bàn để sắp xếp và nhấp vào bàn để sửa chi tiết.', reset_seats:'Khôi phục mặc định', add_seat:'+ Thêm bàn', delete_seat:'Xóa bàn đã chọn', seats_hint:'* Lưu và làm mới ứng dụng khách để áp dụng.', edit_table:'Chi tiết bàn', table_name:'Tên bàn', status:'Trạng thái', view:'Khung cảnh', tag:'Thẻ', capacity:'Sức chứa', table_photo:'Ảnh bàn', view_photo:'Ảnh khung cảnh', apply:'Áp dụng',
+                seats_title:'Quản lý sơ đồ bàn', seats_desc:'Kéo bàn để sắp xếp và nhấp vào bàn để sửa chi tiết.', reset_seats:'Khôi phục mặc định', add_seat:'+ Thêm bàn', delete_seat:'Xóa bàn đã chọn', seats_hint:'* Lưu và làm mới ứng dụng khách để áp dụng.', edit_table:'Chi tiết bàn', table_name:'Tên bàn', status:'Trạng thái', view:'Khung cảnh', tag:'Thẻ', capacity:'Sức chứa', table_photo:'Ảnh bàn', view_photo:'Ảnh khung cảnh', image_max_5mb:'Tệp gốc tối đa 5MB (tự nén khi lưu)', apply:'Áp dụng',
                 qr_title:'Hệ thống QR định tuyến', qr_desc:'Tạo mã QR riêng cho công khai và tại cửa hàng.', qr_external:'Công khai (Xem thực đơn)', qr_external_desc:'Tắt đặt món và đặt bàn; vẫn dùng được chat AI.', qr_internal:'Tại cửa hàng (Đặt món)', qr_internal_desc:'Cho phép đặt bàn trực tiếp và đặt món với AI.', copy_url:'Sao chép URL',
                 set_title:'Cài đặt', set_desc:'Thay đổi ngôn ngữ và giao diện quản trị.', set_theme:'Chế độ tối / sáng', theme_label:'Bật chế độ sáng', admin_language:'Ngôn ngữ quản trị',
-                no_orders:'Hiện không có đơn hàng.', table:'Bàn', order_time:'Thời gian', quantity:'Số lượng', total:'Tổng', complete_order:'Hoàn tất', completed:'Đã hoàn tất', edit:'Sửa', resume:'Bán lại', mark_soldout:'Đánh dấu hết món', no_image:'Không có ảnh', selected:'đã chọn', no_seats:'Chưa có bàn. Hãy thêm bàn mới.', floor_plan:'Sơ đồ cửa hàng', kitchen:'Bếp', restroom:'Nhà vệ sinh', bar:'Quầy bar', terrace:'Sân hiên'
+                no_orders:'Hiện không có đơn hàng.', reject_order:'Từ chối đơn', rejected:'Đã từ chối', table:'Bàn', order_time:'Thời gian', quantity:'Số lượng', total:'Tổng', complete_order:'Hoàn tất', completed:'Đã hoàn tất', no_reservations:'Hiện không có yêu cầu đặt bàn.', reservation_request:'Yêu cầu đặt bàn', waiting_request:'Yêu cầu chờ bàn', request_time:'Thời gian yêu cầu', party_size:'Số khách', people:'người', accept_reservation:'Chấp nhận', reject_reservation:'Từ chối/Hủy', accepted_reservation:'Đã chấp nhận', cancelled_reservation:'Đã hủy', edit:'Sửa', resume:'Bán lại', mark_soldout:'Đánh dấu hết món', no_image:'Không có ảnh', selected:'đã chọn', no_seats:'Chưa có bàn. Hãy thêm bàn mới.', floor_plan:'Sơ đồ cửa hàng', kitchen:'Bếp', restroom:'Nhà vệ sinh', bar:'Quầy bar', terrace:'Sân hiên'
             }
         };
         let adminLanguage = localStorage.getItem('qmenu_admin_language') || 'ko';
@@ -437,7 +437,7 @@
             adminLanguage = ['ko','en','vi'].includes(language) ? language : 'ko';
             localStorage.setItem('qmenu_admin_language', adminLanguage);
             applyAdminTranslations();
-            renderMenu(); renderSeatLayoutEditor(); renderOrders();
+            renderMenu(); renderSeatLayoutEditor(); renderOrders(); renderReservations();
             const submitButton = document.getElementById('submit-btn');
             if (submitButton) submitButton.textContent = editMenuId ? tr('save') : tr('btn_submit');
         }
@@ -619,7 +619,7 @@
             const file = input.files?.[0];
             if (!file) return;
             try {
-                const image = await prepareMenuImage(file);
+                const image = await prepareMenuImage(file, 5 * 1024 * 1024, 'image/webp');
                 if (kind === 'table') pendingTableImage = image;
                 else pendingViewImage = image;
                 updateSeatImagePreview(kind, image);
@@ -749,7 +749,10 @@
             
             if(viewId === 'qr-zone') generateQR();
             if(viewId === 'store-info') fetchStoreInfo();
-            if(viewId === 'seat-layout') renderSeatLayoutEditor();
+            if(viewId === 'seat-layout') {
+                renderSeatLayoutEditor();
+                fetchReservations();
+            }
         }
 
         // 초기 데이터 로딩
@@ -787,7 +790,14 @@
                 alert(adminMessage('매장 정보가 업데이트 되었습니다.', 'Store information was updated.', 'Đã cập nhật thông tin cửa hàng.'));
             } catch (error) {
                 console.error('Store info update error', error);
-                alert(adminMessage('업데이트에 실패했습니다.', 'The update failed.', 'Cập nhật thất bại.'));
+                const isTranslationError = error.message?.includes('자동 번역');
+                alert(isTranslationError
+                    ? adminMessage(
+                        '영문 자동 번역에 실패했습니다. 영어 항목을 직접 입력하거나 AI 설정을 확인해 주세요.',
+                        'English auto-translation failed. Enter the English fields manually or check the AI settings.',
+                        'Không thể tự động dịch sang tiếng Anh. Hãy nhập trực tiếp các mục tiếng Anh hoặc kiểm tra cài đặt AI.'
+                    )
+                    : error.message || adminMessage('업데이트에 실패했습니다.', 'The update failed.', 'Cập nhật thất bại.'));
             }
         }
 
@@ -814,10 +824,10 @@
         }
 
         function renderOrders() {
-            const containers = ['orders-list', 'seat-orders-list'].map(id => document.getElementById(id)).filter(Boolean);
-            if (containers.length === 0) return;
+            const container = document.getElementById('orders-list');
+            if (!container) return;
             if (ordersData.length === 0) {
-                containers.forEach(container => { container.innerHTML = `<div style="color:var(--text-secondary);">${tr('no_orders')}</div>`; });
+                container.innerHTML = `<div style="color:var(--text-secondary);">${tr('no_orders')}</div>`;
                 return;
             }
             const locale = adminLanguage === 'ko' ? 'ko-KR' : adminLanguage === 'vi' ? 'vi-VN' : 'en-US';
@@ -825,22 +835,25 @@
                 const menu = db.find(item => item.id === o.menu_id);
                 const menuName = menu ? (menu.name[adminLanguage] || menu.name.ko) : o.menu_name;
                 return `
-                <div class="card-container" style="padding: 1rem; margin-bottom: 1rem; border-left: 4px solid ${o.status === 'pending' ? 'var(--accent-warning)' : 'var(--accent-success)'}">
+                <div class="card-container" style="padding: 1rem; margin-bottom: 1rem; border-left: 4px solid ${o.status === 'pending' ? 'var(--accent-warning)' : o.status === 'completed' ? 'var(--accent-success)' : '#ef4444'}">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <h3 style="margin-bottom:0.25rem; font-size:1.1rem;"><i class="fa-solid fa-utensils"></i> [${escapeHtml(o.table_id)} ${tr('table')}] ${escapeHtml(menuName)}</h3>
                             <div style="color:var(--text-secondary); font-size:0.85rem;">${tr('order_time')}: ${escapeHtml(new Date(o.created_at).toLocaleString(locale))} | ${tr('quantity')}: ${o.quantity} | ${tr('total')}: ${o.total_price} ${escapeHtml(o.currency)}</div>
                         </div>
-                        <div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                             ${o.status === 'pending' 
-                                ? `<button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem;" onclick="completeOrder('${o.id}')">${tr('complete_order')}</button>`
-                                : `<span style="color:var(--accent-success); font-weight:bold;"><i class="fa-solid fa-check"></i> ${tr('completed')}</span>`
+                                ? `<button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem;" onclick="completeOrder('${o.id}')">${tr('complete_order')}</button>
+                                   <button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem; background:#ef4444;" onclick="rejectOrder('${o.id}')">${tr('reject_order')}</button>`
+                                : o.status === 'cancelled'
+                                    ? `<span style="color:#ef4444; font-weight:bold;"><i class="fa-solid fa-xmark"></i> ${tr('rejected')}</span>`
+                                    : `<span style="color:var(--accent-success); font-weight:bold;"><i class="fa-solid fa-check"></i> ${tr('completed')}</span>`
                             }
                         </div>
                     </div>
                 </div>
             `}).join('');
-            containers.forEach(container => { container.innerHTML = markup; });
+            container.innerHTML = markup;
         }
 
         async function completeOrder(id) {
@@ -856,6 +869,76 @@
             }
         }
 
+        async function rejectOrder(id) {
+            try {
+                await apiFetch(`/api/orders/${encodeURIComponent(id)}/status`, {
+                    method: 'PUT', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+                await fetchOrders();
+            } catch(error) {
+                console.error('Order reject error', error);
+                alert(adminMessage('주문을 거부하지 못했습니다.', 'Could not reject the order.', 'Không thể từ chối đơn hàng.'));
+            }
+        }
+
+        let reservationsData = [];
+        async function fetchReservations() {
+            try {
+                reservationsData = await apiFetch('/api/reservations');
+                renderReservations();
+            } catch(error) {
+                console.error('Reservation load error', error);
+                const container = document.getElementById('seat-reservations-list');
+                if (container) container.innerHTML = `<div style="color:#ef4444;">${escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function renderReservations() {
+            const container = document.getElementById('seat-reservations-list');
+            if (!container) return;
+            if (reservationsData.length === 0) {
+                container.innerHTML = `<div style="color:var(--text-secondary);">${tr('no_reservations')}</div>`;
+                return;
+            }
+            const locale = adminLanguage === 'ko' ? 'ko-KR' : adminLanguage === 'vi' ? 'vi-VN' : 'en-US';
+            container.innerHTML = reservationsData.map(reservation => {
+                const isPending = reservation.status === 'reserved' || reservation.status === 'waiting';
+                const isAccepted = reservation.status === 'accepted';
+                const requestLabel = reservation.status === 'waiting' ? tr('waiting_request') : tr('reservation_request');
+                return `
+                    <div class="card-container" style="padding:1rem; margin-bottom:1rem; border-left:4px solid ${isPending ? 'var(--accent-warning)' : isAccepted ? 'var(--accent-success)' : '#ef4444'}">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+                            <div>
+                                <h3 style="margin-bottom:0.25rem; font-size:1.1rem;"><i class="fa-solid fa-calendar-check"></i> [${escapeHtml(reservation.table_id)} ${tr('table')}] ${requestLabel}</h3>
+                                <div style="color:var(--text-secondary); font-size:0.85rem;">${tr('request_time')}: ${escapeHtml(new Date(reservation.created_at).toLocaleString(locale))} | ${tr('party_size')}: ${Number(reservation.party_size || 0)} ${tr('people')}</div>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                ${isPending
+                                    ? `<button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem;" onclick="updateReservation('${reservation.id}', 'accepted')">${tr('accept_reservation')}</button>
+                                       <button class="btn" style="width:auto; padding:0.5rem 1rem; font-size:0.85rem; background:#ef4444;" onclick="updateReservation('${reservation.id}', 'cancelled')">${tr('reject_reservation')}</button>`
+                                    : `<span style="color:${isAccepted ? 'var(--accent-success)' : '#ef4444'}; font-weight:bold;"><i class="fa-solid ${isAccepted ? 'fa-check' : 'fa-xmark'}"></i> ${isAccepted ? tr('accepted_reservation') : tr('cancelled_reservation')}</span>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updateReservation(id, status) {
+            try {
+                await apiFetch(`/api/reservations/${encodeURIComponent(id)}/status`, {
+                    method: 'PUT', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ status })
+                });
+                await Promise.all([fetchReservations(), fetchTables()]);
+            } catch(error) {
+                console.error('Reservation status update error', error);
+                alert(adminMessage('예약 상태를 변경하지 못했습니다.', 'Could not update the reservation.', 'Không thể cập nhật trạng thái đặt bàn.'));
+            }
+        }
+
         // 앱 초기화
         window.onload = () => {
             fetchStoreInfo();
@@ -863,9 +946,11 @@
             fetchKeywords();
             fetchTables();
             fetchOrders();
+            fetchReservations();
             applyAdminTranslations();
             setInterval(() => {
                 fetchOrders();
+                fetchReservations();
             }, 5000); // 주기적으로 폴링
         };
 
@@ -1037,15 +1122,16 @@
 
         function mockTr(text, english = '') { return {ko: text, en: english, vi: ''}; }
 
-        function prepareMenuImage(file) {
+        function prepareMenuImage(file, maxSourceBytes = 2 * 1024 * 1024, outputType = file.type) {
             return new Promise((resolve, reject) => {
                 const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
                 if (!allowedTypes.includes(file.type)) {
                     reject(new Error(adminMessage('JPEG, PNG 또는 WEBP 이미지만 업로드할 수 있습니다.', 'Only JPEG, PNG, or WEBP images are allowed.', 'Chỉ cho phép ảnh JPEG, PNG hoặc WEBP.')));
                     return;
                 }
-                if (file.size > 2 * 1024 * 1024) {
-                    reject(new Error(adminMessage('원본 이미지는 2MB 이하여야 합니다.', 'The original image must be 2MB or smaller.', 'Ảnh gốc phải nhỏ hơn hoặc bằng 2MB.')));
+                if (file.size > maxSourceBytes) {
+                    const maxSourceMegabytes = Math.floor(maxSourceBytes / (1024 * 1024));
+                    reject(new Error(adminMessage(`원본 이미지는 ${maxSourceMegabytes}MB 이하여야 합니다.`, `The original image must be ${maxSourceMegabytes}MB or smaller.`, `Ảnh gốc phải nhỏ hơn hoặc bằng ${maxSourceMegabytes}MB.`)));
                     return;
                 }
 
@@ -1061,7 +1147,7 @@
                         canvas.height = Math.max(1, Math.round(image.height * scale));
                         const context = canvas.getContext('2d');
                         context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                        const dataUrl = canvas.toDataURL(file.type, 0.8);
+                        const dataUrl = canvas.toDataURL(outputType, 0.8);
                         const estimatedBytes = Math.floor((dataUrl.split(',')[1]?.length || 0) * 0.75);
                         if (estimatedBytes > 2 * 1024 * 1024) {
                             reject(new Error(adminMessage('리사이징된 이미지가 2MB를 초과합니다.', 'The resized image exceeds 2MB.', 'Ảnh sau khi đổi kích thước vượt quá 2MB.')));

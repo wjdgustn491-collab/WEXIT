@@ -688,15 +688,44 @@ def menu_payload_to_row(payload: MenuPayload, include_image: bool) -> Dict[str, 
     return row
 
 
-def auto_translate_fields(fields: Dict[str, str]) -> Dict[str, Dict[str, str]]:
+def auto_translate_fields(
+    fields: Dict[str, str], *, strict: bool = False
+) -> Dict[str, Dict[str, str]]:
     """Translate Korean source fields in one AI request, with a safe source fallback."""
     fallback = {
         language: {key: value for key, value in fields.items()}
         for language in ("en", "vi")
     }
-    if not gemini_client or not any(fields.values()):
+    if not any(fields.values()):
+        return fallback
+    if not gemini_client:
+        if strict:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "영문 자동 번역을 사용할 수 없습니다. "
+                    "영어 항목을 직접 입력하거나 AI 설정을 확인해 주세요."
+                ),
+            )
         return fallback
     try:
+        field_schema = {
+            "type": "object",
+            "properties": {
+                key: {"type": "string"} for key in fields
+            },
+            "required": list(fields),
+            "additionalProperties": False,
+        }
+        translation_schema = {
+            "type": "object",
+            "properties": {
+                "en": field_schema,
+                "vi": field_schema,
+            },
+            "required": ["en", "vi"],
+            "additionalProperties": False,
+        }
         response = gemini_client.models.generate_content(
             model=GEMINI_MODEL,
             contents=json.dumps(fields, ensure_ascii=False),
@@ -708,18 +737,38 @@ def auto_translate_fields(fields: Dict[str, str]) -> Dict[str, Dict[str, str]]:
                     '{"en":{"key":"translation"},"vi":{"key":"translation"}}.'
                 ),
                 response_mime_type="application/json",
+                response_json_schema=translation_schema,
             ),
         )
-        parsed = json.loads(response.text or "{}")
-        return {
-            language: {
-                key: str((parsed.get(language) or {}).get(key) or value).strip()
-                for key, value in fields.items()
-            }
-            for language in ("en", "vi")
-        }
-    except Exception:
+        parsed = (
+            response.parsed
+            if isinstance(response.parsed, dict)
+            else json.loads(response.text or "{}")
+        )
+        translated: Dict[str, Dict[str, str]] = {}
+        for language in ("en", "vi"):
+            language_values = parsed.get(language)
+            if not isinstance(language_values, dict):
+                raise ValueError(f"Missing {language} translation object")
+            translated[language] = {}
+            for key, value in fields.items():
+                translated_value = str(language_values.get(key) or "").strip()
+                if value and not translated_value:
+                    raise ValueError(
+                        f"Missing {language} translation for {key}"
+                    )
+                translated[language][key] = translated_value or value
+        return translated
+    except Exception as exc:
         logger.exception("Automatic translation failed")
+        if strict:
+            raise HTTPException(
+                status_code=502,
+                detail=(
+                    "영문 자동 번역에 실패했습니다. "
+                    "영어 항목을 직접 입력하거나 AI 설정을 확인해 주세요."
+                ),
+            ) from exc
         return fallback
 
 
@@ -790,7 +839,12 @@ def update_store(payload: StoreUpdate) -> Dict[str, Any]:
         "hours": payload.hours,
         "description": payload.description,
     }
-    generated = auto_translate_fields(source)
+    generated = auto_translate_fields(
+        source,
+        strict=not all(
+            (payload.name_en, payload.hours_en, payload.description_en)
+        ),
+    )
     row = get_repository().update_store(
         {
             "name": payload.name,
