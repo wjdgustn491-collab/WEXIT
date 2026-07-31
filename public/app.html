@@ -1024,7 +1024,11 @@
                 .then(data => { setReviews(data); setError(''); })
                 .catch(err => { console.error('Review load failed', err); setError(t.loadFailed); });
 
-            useEffect(() => { loadReviews(); }, []);
+            useEffect(() => {
+                loadReviews();
+                const timer = setInterval(loadReviews, 5000);
+                return () => clearInterval(timer);
+            }, []);
 
             const handlePhoto = async event => {
                 const file = event.target.files?.[0];

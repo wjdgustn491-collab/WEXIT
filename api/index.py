@@ -689,6 +689,18 @@ class SupabaseRepository:
             raise HTTPException(status_code=404, detail="리뷰를 찾을 수 없습니다.")
         return response.data[0]
 
+    def delete_review(self, review_id: str) -> None:
+        response = self._run(
+            lambda: self.client.table("reviews")
+            .delete()
+            .eq("store_id", self.store_id)
+            .eq("id", review_id)
+            .execute(),
+            "리뷰를 삭제하지 못했습니다.",
+        )
+        if not response.data:
+            raise HTTPException(status_code=404, detail="리뷰를 찾을 수 없습니다.")
+
 
 REPOSITORY_ERROR = ""
 
@@ -1176,6 +1188,15 @@ def update_review(review_id: UUID, payload: ReviewReplyUpdate) -> Dict[str, Any]
         "success": True,
         "message": "리뷰 답글이 저장되었습니다.",
         "review": review_to_public(row),
+    }
+
+
+@app.delete("/api/reviews/{review_id}")
+def delete_review(review_id: UUID) -> Dict[str, Any]:
+    get_repository().delete_review(str(review_id))
+    return {
+        "success": True,
+        "message": "리뷰가 삭제되었습니다.",
     }
 
 
