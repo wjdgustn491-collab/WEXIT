@@ -79,7 +79,7 @@ create table if not exists public.reservations (
         status in ('reserved', 'waiting', 'accepted', 'cancelled')
     ),
     customer_session_id text not null,
-    party_size integer not null default 0 check (party_size between 0 and 50),
+    party_size integer not null default 1 check (party_size between 1 and 4),
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
@@ -114,6 +114,24 @@ alter table public.reviews alter column rating type numeric(2, 1)
 alter table public.reviews add constraint reviews_rating_check check (
     rating between 0.5 and 5 and mod(rating * 2, 1) = 0
 );
+alter table public.reservations alter column party_size set default 1;
+update public.reservations
+set party_size = greatest(1, least(4, party_size))
+where party_size not between 1 and 4;
+alter table public.reservations drop constraint if exists reservations_party_size_check;
+alter table public.reservations add constraint reservations_party_size_check check (
+    party_size between 1 and 4
+);
+update public.reservations reservation
+set status = 'cancelled'
+where reservation.status in ('reserved', 'waiting', 'accepted')
+  and exists (
+      select 1
+      from public.tables table_item
+      where table_item.store_id = reservation.store_id
+        and table_item.table_code = reservation.table_id
+        and table_item.status = 'available'
+  );
 
 create index if not exists menus_store_id_idx
     on public.menus(store_id);
@@ -191,6 +209,21 @@ begin
         raise exception 'duplicate table_code';
     end if;
 
+    -- Treat an explicit admin change back to available as releasing the table.
+    update public.reservations reservation
+    set status = 'cancelled'
+    where reservation.store_id = p_store_id
+      and reservation.status in ('reserved', 'waiting', 'accepted')
+      and exists (
+          select 1
+          from public.tables current_table
+          join jsonb_array_elements(p_tables) item
+            on upper(trim(item->>'table_code')) = current_table.table_code
+          where current_table.store_id = p_store_id
+            and current_table.table_code = reservation.table_id
+            and item->>'status' = 'available'
+      );
+
     delete from public.tables
     where store_id = p_store_id
       and table_code not in (
@@ -236,6 +269,78 @@ begin
         view_image = excluded.view_image,
         sort_order = excluded.sort_order,
         updated_at = now();
+end;
+$$;
+
+create or replace function public.create_reservation_and_table(
+    p_store_id uuid,
+    p_table_code text,
+    p_customer_session_id text,
+    p_party_size integer
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_table public.tables%rowtype;
+    v_reservation public.reservations%rowtype;
+    v_status text;
+begin
+    select *
+    into v_table
+    from public.tables
+    where store_id = p_store_id
+      and table_code = upper(trim(p_table_code))
+    for update;
+
+    if not found then
+        raise exception 'table not found';
+    end if;
+
+    if p_party_size < 1 or p_party_size > least(4, v_table.capacity) then
+        raise exception 'invalid party size';
+    end if;
+
+    v_status := case when v_table.status = 'available' then 'reserved' else 'waiting' end;
+
+    if v_status = 'reserved' and exists (
+        select 1 from public.reservations
+        where store_id = p_store_id
+          and table_id = v_table.table_code
+          and status in ('reserved', 'accepted')
+    ) then
+        raise exception 'active reservation exists';
+    end if;
+
+    if v_status = 'waiting' and exists (
+        select 1 from public.reservations
+        where store_id = p_store_id
+          and table_id = v_table.table_code
+          and customer_session_id = p_customer_session_id
+          and status in ('reserved', 'waiting', 'accepted')
+    ) then
+        raise exception 'duplicate customer reservation';
+    end if;
+
+    insert into public.reservations (
+        store_id, table_id, status, customer_session_id, party_size
+    ) values (
+        p_store_id,
+        v_table.table_code,
+        v_status,
+        p_customer_session_id,
+        p_party_size
+    ) returning * into v_reservation;
+
+    if v_status = 'reserved' then
+        update public.tables
+        set status = 'reserved'
+        where id = v_table.id;
+    end if;
+
+    return to_jsonb(v_reservation);
 end;
 $$;
 

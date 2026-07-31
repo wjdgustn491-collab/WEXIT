@@ -229,7 +229,7 @@ class ReservationCreate(BaseModel):
     status: Literal["reserved", "waiting"]
     customer_session_id: UUID
     mode: Literal["web", "store"]
-    party_size: int = Field(default=0, ge=0, le=50)
+    party_size: int = Field(default=1, ge=1, le=4)
 
     @field_validator("table_id")
     @classmethod
@@ -576,27 +576,51 @@ class SupabaseRepository:
         response = self._run(operation, "예약을 불러오지 못했습니다.")
         return response.data or []
 
-    def has_active_reservation(self, table_id: str) -> bool:
+    def has_active_reservation(
+        self,
+        table_id: str,
+        statuses: set[str] | None = None,
+        customer_session_id: str | None = None,
+    ) -> bool:
+        active_statuses = statuses or ACTIVE_RESERVATION_STATUSES
+
+        def operation() -> Any:
+            query = (
+                self.client.table("reservations")
+                .select("id")
+                .eq("store_id", self.store_id)
+                .eq("table_id", table_id)
+                .in_("status", sorted(active_statuses))
+            )
+            if customer_session_id:
+                query = query.eq("customer_session_id", customer_session_id)
+            return query.limit(1).execute()
+
         response = self._run(
-            lambda: self.client.table("reservations")
-            .select("id")
-            .eq("store_id", self.store_id)
-            .eq("table_id", table_id)
-            .in_("status", list(ACTIVE_RESERVATION_STATUSES))
-            .limit(1)
-            .execute(),
+            operation,
             "예약 중복 여부를 확인하지 못했습니다.",
         )
         return bool(response.data)
 
     def create_reservation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         response = self._run(
-            lambda: self.client.table("reservations")
-            .insert({"store_id": self.store_id, **payload})
-            .execute(),
+            lambda: self.client.rpc(
+                "create_reservation_and_table",
+                {
+                    "p_store_id": self.store_id,
+                    "p_table_code": payload["table_id"],
+                    "p_customer_session_id": payload["customer_session_id"],
+                    "p_party_size": payload["party_size"],
+                },
+            ).execute(),
             "예약을 등록하지 못했습니다.",
         )
-        return response.data[0]
+        if not response.data:
+            raise HTTPException(
+                status_code=502,
+                detail="예약이 저장되었는지 확인하지 못했습니다.",
+            )
+        return response.data[0] if isinstance(response.data, list) else response.data
 
     def update_reservation_status(
         self, reservation_id: str, status: str
@@ -1063,15 +1087,31 @@ def create_reservation(payload: ReservationCreate) -> Dict[str, Any]:
     if not table:
         raise HTTPException(status_code=404, detail="테이블을 찾을 수 없습니다.")
     session_id = str(payload.customer_session_id)
-    if repo.has_active_reservation(payload.table_id):
+    max_party_size = min(4, max(1, int(table.get("capacity") or 4)))
+    if payload.party_size > max_party_size:
         raise HTTPException(
-            status_code=409,
-            detail="같은 좌석에 진행 중인 예약 또는 대기 요청이 있습니다.",
+            status_code=422,
+            detail=f"이 테이블은 최대 {max_party_size}명까지 예약할 수 있습니다.",
         )
 
     requested_status = (
         "reserved" if table.get("status") == "available" else "waiting"
     )
+    if requested_status == "reserved" and repo.has_active_reservation(
+        payload.table_id, {"reserved", "accepted"}
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="이미 진행 중인 예약이 있는 테이블입니다.",
+        )
+    if requested_status == "waiting" and repo.has_active_reservation(
+        payload.table_id,
+        customer_session_id=session_id,
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="이미 이 테이블에 예약 또는 대기를 신청했습니다.",
+        )
     row = repo.create_reservation(
         {
             "table_id": payload.table_id,
