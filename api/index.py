@@ -242,7 +242,7 @@ class ReservationStatusUpdate(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    rating: int = Field(ge=1, le=5)
+    rating: float = Field(ge=0.5, le=5, multiple_of=0.5)
     review_text: str = Field(min_length=1, max_length=2000)
     image: Optional[str] = None
     customer_session_id: UUID
@@ -349,7 +349,7 @@ def reservation_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
 def review_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "id": str(row["id"]),
-        "rating": int(row["rating"]),
+        "rating": public_number(row["rating"]),
         "review_text": row["review_text"],
         "image": row.get("image_data") or "",
         "reply": row.get("reply") or "",
@@ -645,6 +645,11 @@ class SupabaseRepository:
             .execute(),
             "리뷰를 등록하지 못했습니다.",
         )
+        if not response.data:
+            raise HTTPException(
+                status_code=502,
+                detail="리뷰가 저장되었는지 확인하지 못했습니다.",
+            )
         return response.data[0]
 
     def update_review_reply(self, review_id: str, reply: str) -> Dict[str, Any]:
