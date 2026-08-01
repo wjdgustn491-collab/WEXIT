@@ -247,7 +247,7 @@ class ReservationWaitTimeUpdate(BaseModel):
 
 class ReviewCreate(BaseModel):
     rating: float = Field(ge=0.5, le=5, multiple_of=0.5)
-    review_text: str = Field(min_length=1, max_length=2000)
+    review_text: str = Field(min_length=1, max_length=500)
     image: Optional[str] = None
     customer_session_id: UUID
 
@@ -599,8 +599,8 @@ class SupabaseRepository:
         return response.data[0] if response.data else None
 
     def create_reservation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        response = self._run(
-            lambda: self.client.rpc(
+        try:
+            response = self.client.rpc(
                 "create_reservation_and_table",
                 {
                     "p_store_id": self.store_id,
@@ -608,15 +608,97 @@ class SupabaseRepository:
                     "p_customer_session_id": payload["customer_session_id"],
                     "p_party_size": payload["party_size"],
                 },
-            ).execute(),
-            "예약을 등록하지 못했습니다.",
-        )
-        if not response.data:
-            raise HTTPException(
-                status_code=502,
-                detail="예약이 저장되었는지 확인하지 못했습니다.",
+            ).execute()
+            if response.data:
+                return (
+                    response.data[0]
+                    if isinstance(response.data, list)
+                    else response.data
+                )
+            logger.warning("Reservation RPC returned no data; using compatibility path")
+        except Exception:
+            # Older deployments may still have the previous SQL function
+            # signature. Keep bookings working until schema.sql is reapplied.
+            logger.warning(
+                "Reservation RPC failed; using compatibility path",
+                exc_info=True,
             )
-        return response.data[0] if isinstance(response.data, list) else response.data
+        return self._create_reservation_compat(payload)
+
+    def _create_reservation_compat(
+        self, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        table = self.get_table(payload["table_id"])
+        if not table:
+            raise HTTPException(
+                status_code=404, detail="존재하지 않는 테이블입니다."
+            )
+
+        # Claim an available table with a conditional update. Only one
+        # concurrent request can receive the reserved status.
+        claim = self._run(
+            lambda: self.client.table("tables")
+            .update({"status": "reserved"})
+            .eq("store_id", self.store_id)
+            .eq("id", table["id"])
+            .eq("status", "available")
+            .execute(),
+            "예약 테이블 상태를 변경하지 못했습니다.",
+        )
+        claimed_table = bool(claim.data)
+        status = "reserved" if claimed_table else "waiting"
+
+        try:
+            if claimed_table:
+                self._run(
+                    lambda: self.client.table("reservations")
+                    .update({"status": "cancelled"})
+                    .eq("store_id", self.store_id)
+                    .eq("table_id", payload["table_id"])
+                    .in_("status", sorted(ACTIVE_RESERVATION_STATUSES))
+                    .execute(),
+                    "기존 예약 상태를 정리하지 못했습니다.",
+                )
+            else:
+                existing = self.get_customer_active_reservation(
+                    payload["table_id"], payload["customer_session_id"]
+                )
+                if existing:
+                    return existing
+
+            response = self._run(
+                lambda: self.client.table("reservations")
+                .insert(
+                    {
+                        "store_id": self.store_id,
+                        "table_id": payload["table_id"],
+                        "status": status,
+                        "customer_session_id": payload[
+                            "customer_session_id"
+                        ],
+                        "party_size": payload["party_size"],
+                    }
+                )
+                .execute(),
+                "예약을 등록하지 못했습니다.",
+            )
+            if not response.data:
+                raise HTTPException(
+                    status_code=502,
+                    detail="예약이 저장되었는지 확인하지 못했습니다.",
+                )
+            return response.data[0]
+        except HTTPException:
+            if claimed_table:
+                try:
+                    self.client.table("tables").update(
+                        {"status": "available"}
+                    ).eq("store_id", self.store_id).eq(
+                        "id", table["id"]
+                    ).eq("status", "reserved").execute()
+                except Exception:
+                    logger.exception("Failed to release a reservation claim")
+            raise
 
     def update_reservation_status(
         self, reservation_id: str, status: str
@@ -1061,8 +1143,14 @@ def create_order(payload: OrderCreate) -> Dict[str, Any]:
         raise HTTPException(status_code=404, detail="메뉴를 찾을 수 없습니다.")
     if menu.get("is_sold_out"):
         raise HTTPException(status_code=409, detail="품절된 메뉴는 주문할 수 없습니다.")
-    if not repo.get_table(payload.table_id):
-        raise HTTPException(status_code=404, detail="테이블을 찾을 수 없습니다.")
+    table = repo.get_table(payload.table_id)
+    if not table:
+        raise HTTPException(status_code=404, detail="존재하지 않는 테이블입니다.")
+    if table.get("status") not in {"occupied", "reserved"}:
+        raise HTTPException(
+            status_code=409,
+            detail="이용 중이거나 예약 중인 테이블에서만 주문할 수 있습니다.",
+        )
 
     row = repo.create_order(
         {

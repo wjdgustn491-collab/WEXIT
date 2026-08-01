@@ -94,7 +94,7 @@ create table if not exists public.reviews (
     rating numeric(2, 1) not null check (
         rating between 0.5 and 5 and mod(rating * 2, 1) = 0
     ),
-    review_text text not null check (char_length(review_text) between 1 and 2000),
+    review_text text not null check (char_length(review_text) between 1 and 500),
     image_data text,
     reply text,
     customer_session_id text not null,
@@ -113,6 +113,10 @@ alter table public.menus add column if not exists category text not null default
 alter table public.tables add column if not exists table_image text;
 alter table public.tables add column if not exists view_image text;
 alter table public.reviews add column if not exists reply text;
+alter table public.reviews drop constraint if exists reviews_review_text_check;
+alter table public.reviews add constraint reviews_review_text_check check (
+    char_length(review_text) between 1 and 500
+) not valid;
 alter table public.reviews drop constraint if exists reviews_rating_check;
 alter table public.reviews alter column rating type numeric(2, 1)
     using rating::numeric;
