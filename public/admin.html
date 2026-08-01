@@ -329,7 +329,10 @@
                 <div class="seat-layout-workspace">
                     <div id="seat-layout-canvas" class="seat-layout-canvas"></div>
                     <div class="seat-layout-sidebar">
-                        <h2><i class="fa-solid fa-calendar-check"></i> <span data-i18n="live_reservations">실시간 예약 현황</span></h2>
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+                            <h2 style="margin:0;"><i class="fa-solid fa-calendar-check"></i> <span data-i18n="live_reservations">실시간 예약 현황</span></h2>
+                            <button type="button" class="btn" style="width:auto; padding:0.5rem 0.75rem; background:#ef4444; font-size:0.78rem;" onclick="clearReservationHistory()" data-i18n="clear_reservations">예약기록 초기화</button>
+                        </div>
                         <div id="seat-reservations-list"></div>
                     </div>
                 </div>
@@ -426,7 +429,7 @@
                 seats_title:'좌석 배치 관리', seats_desc:'좌석을 드래그해 배치하고, 테이블을 클릭해 상세 정보를 수정합니다.', reset_seats:'기본값 복원', add_seat:'+ 새 좌석 추가', delete_seat:'선택 좌석 삭제', seat_position_edit:'좌석 위치 수정', seat_position_edit_active:'수정 중', seats_hint:'* 저장 후 고객 화면을 새로고침하면 변경된 좌석 배치가 반영됩니다.', edit_table:'테이블 상세 설정', table_name:'테이블 이름', status:'상태', view:'뷰', tag:'태그', capacity:'최대 인원', table_photo:'테이블 사진', view_photo:'뷰 사진', image_max_5mb:'원본 파일 최대 5MB (저장 시 자동 압축)', apply:'적용',
                 qr_title:'라우팅 QR 시스템', qr_desc:'외부 배포용과 내부 매장용 QR을 분리하여 발급합니다.', qr_external:'인터넷 배포용 (메뉴 탐색 전용)', qr_external_desc:'주문 및 예약 기능이 비활성화되며, AI와 메뉴 추천 대화만 가능합니다.', qr_internal:'가게 전용 (테이블 오더용)', qr_internal_desc:'좌석 실시간 예약 및 AI 오더 주문 처리가 가능합니다.', copy_url:'URL 복사',
                 set_title:'설정', set_desc:'관리자 화면의 언어와 테마를 변경합니다.', set_theme:'다크 모드 / 라이트 모드', theme_label:'라이트 모드 켜기', admin_language:'관리자 언어',
-                no_orders:'현재 들어온 주문이 없습니다.', reject_order:'주문 거부', rejected:'거부됨', table:'테이블', order_time:'주문 시간', quantity:'수량', total:'총 금액', complete_order:'조리 완료', completed:'완료됨', no_reservations:'현재 들어온 예약 요청이 없습니다.', reservation_request:'예약 요청', waiting_request:'웨이팅 요청', request_time:'요청 시간', party_size:'예약 인원', people:'명', accept_reservation:'예약 승인', reject_reservation:'거절/취소', accepted_reservation:'승인 완료', cancelled_reservation:'취소됨', edit:'수정', resume:'판매 재개', mark_soldout:'품절 처리', no_image:'사진 없음', selected:'선택됨', no_seats:'좌석이 없습니다. 새 좌석을 추가해 보세요.', floor_plan:'매장 평면도', kitchen:'주방', restroom:'화장실', bar:'바 / 카운터', terrace:'테라스'
+                no_orders:'현재 들어온 주문이 없습니다.', reject_order:'주문 거부', rejected:'거부됨', table:'테이블', order_time:'주문 시간', quantity:'수량', total:'총 금액', complete_order:'조리 완료', completed:'완료됨', no_reservations:'현재 들어온 예약 요청이 없습니다.', reservation_request:'예약 요청', waiting_request:'웨이팅 요청', request_time:'요청 시간', party_size:'예약 인원', people:'명', accept_reservation:'예약 승인', reject_reservation:'거절/취소', accepted_reservation:'승인 완료', cancelled_reservation:'취소됨', clear_reservations:'예약기록 초기화', confirm_clear_reservations:'모든 예약 기록을 삭제하고 예약석을 해제하시겠습니까?', reservation_history_cleared:'예약 기록이 초기화되었습니다.', estimated_wait_time:'예상 대기시간', minutes:'분', not_set:'미설정', wait_time_prompt:'예상 대기시간을 분 단위로 입력하세요. (0~1440)', invalid_wait_time:'0~1440 사이의 정수를 입력해주세요.', wait_time_saved:'예상 대기시간이 저장되었습니다.', edit:'수정', resume:'판매 재개', mark_soldout:'품절 처리', no_image:'사진 없음', selected:'선택됨', no_seats:'좌석이 없습니다. 새 좌석을 추가해 보세요.', floor_plan:'매장 평면도', kitchen:'주방', restroom:'화장실', bar:'바 / 카운터', terrace:'테라스'
             },
             en: {
                 nav_dashboard:'Dashboard', nav_seats:'Seating Layout', nav_store:'Store Information', nav_menu:'Menu & AI Tags', nav_reviews:'Review Management', nav_qr:'Routing QR System', nav_settings:'Settings',
@@ -437,7 +440,7 @@
                 seats_title:'Seating Layout', seats_desc:'Drag tables to arrange them and click a table to edit details.', reset_seats:'Restore Defaults', add_seat:'+ Add Table', delete_seat:'Delete Selected', seats_hint:'* Save and refresh the customer app to apply changes.', edit_table:'Table Details', table_name:'Table Name', status:'Status', view:'View', tag:'Tag', capacity:'Capacity', table_photo:'Table Photo', view_photo:'View Photo', image_max_5mb:'Original file up to 5MB (compressed when saved)', apply:'Apply',
                 qr_title:'Routing QR System', qr_desc:'Issue separate QR codes for public and in-store use.', qr_external:'Public (Menu Browsing)', qr_external_desc:'Ordering and reservations are disabled; AI menu chat remains available.', qr_internal:'In-store (Table Ordering)', qr_internal_desc:'Enables live reservations and AI-assisted ordering.', copy_url:'Copy URL',
                 set_title:'Settings', set_desc:'Change the admin language and theme.', set_theme:'Dark / Light Mode', theme_label:'Turn on light mode', admin_language:'Admin Language',
-                no_orders:'There are no incoming orders.', reject_order:'Reject Order', rejected:'Rejected', table:'Table', order_time:'Order time', quantity:'Qty', total:'Total', complete_order:'Complete', completed:'Completed', no_reservations:'There are no incoming reservation requests.', reservation_request:'Reservation Request', waiting_request:'Waitlist Request', request_time:'Request time', party_size:'Party size', people:'people', accept_reservation:'Accept', reject_reservation:'Reject/Cancel', accepted_reservation:'Accepted', cancelled_reservation:'Cancelled', edit:'Edit', resume:'Resume Sales', mark_soldout:'Mark Sold Out', no_image:'No Image', selected:'selected', no_seats:'No tables. Add a new table.', floor_plan:'Store Floor Plan', kitchen:'Kitchen', restroom:'Restroom', bar:'Bar / Counter', terrace:'Terrace'
+                no_orders:'There are no incoming orders.', reject_order:'Reject Order', rejected:'Rejected', table:'Table', order_time:'Order time', quantity:'Qty', total:'Total', complete_order:'Complete', completed:'Completed', no_reservations:'There are no incoming reservation requests.', reservation_request:'Reservation Request', waiting_request:'Waitlist Request', request_time:'Request time', party_size:'Party size', people:'people', accept_reservation:'Accept', reject_reservation:'Reject/Cancel', accepted_reservation:'Accepted', cancelled_reservation:'Cancelled', clear_reservations:'Clear Booking History', confirm_clear_reservations:'Delete all booking records and release reserved tables?', reservation_history_cleared:'Booking history was cleared.', estimated_wait_time:'Estimated wait', minutes:'min', not_set:'Not set', wait_time_prompt:'Enter the estimated wait in minutes. (0–1440)', invalid_wait_time:'Enter an integer from 0 to 1440.', wait_time_saved:'Estimated wait time was saved.', edit:'Edit', resume:'Resume Sales', mark_soldout:'Mark Sold Out', no_image:'No Image', selected:'selected', no_seats:'No tables. Add a new table.', floor_plan:'Store Floor Plan', kitchen:'Kitchen', restroom:'Restroom', bar:'Bar / Counter', terrace:'Terrace'
             },
             vi: {
                 nav_dashboard:'Bảng điều khiển', nav_seats:'Quản lý sơ đồ bàn', nav_store:'Thông tin cửa hàng', nav_menu:'Thực đơn & thẻ AI', nav_reviews:'Quản lý đánh giá', nav_qr:'Hệ thống QR', nav_settings:'Cài đặt',
@@ -448,7 +451,7 @@
                 seats_title:'Quản lý sơ đồ bàn', seats_desc:'Kéo bàn để sắp xếp và nhấp vào bàn để sửa chi tiết.', reset_seats:'Khôi phục mặc định', add_seat:'+ Thêm bàn', delete_seat:'Xóa bàn đã chọn', seats_hint:'* Lưu và làm mới ứng dụng khách để áp dụng.', edit_table:'Chi tiết bàn', table_name:'Tên bàn', status:'Trạng thái', view:'Khung cảnh', tag:'Thẻ', capacity:'Sức chứa', table_photo:'Ảnh bàn', view_photo:'Ảnh khung cảnh', image_max_5mb:'Tệp gốc tối đa 5MB (tự nén khi lưu)', apply:'Áp dụng',
                 qr_title:'Hệ thống QR định tuyến', qr_desc:'Tạo mã QR riêng cho công khai và tại cửa hàng.', qr_external:'Công khai (Xem thực đơn)', qr_external_desc:'Tắt đặt món và đặt bàn; vẫn dùng được chat AI.', qr_internal:'Tại cửa hàng (Đặt món)', qr_internal_desc:'Cho phép đặt bàn trực tiếp và đặt món với AI.', copy_url:'Sao chép URL',
                 set_title:'Cài đặt', set_desc:'Thay đổi ngôn ngữ và giao diện quản trị.', set_theme:'Chế độ tối / sáng', theme_label:'Bật chế độ sáng', admin_language:'Ngôn ngữ quản trị',
-                no_orders:'Hiện không có đơn hàng.', reject_order:'Từ chối đơn', rejected:'Đã từ chối', table:'Bàn', order_time:'Thời gian', quantity:'Số lượng', total:'Tổng', complete_order:'Hoàn tất', completed:'Đã hoàn tất', no_reservations:'Hiện không có yêu cầu đặt bàn.', reservation_request:'Yêu cầu đặt bàn', waiting_request:'Yêu cầu chờ bàn', request_time:'Thời gian yêu cầu', party_size:'Số khách', people:'người', accept_reservation:'Chấp nhận', reject_reservation:'Từ chối/Hủy', accepted_reservation:'Đã chấp nhận', cancelled_reservation:'Đã hủy', edit:'Sửa', resume:'Bán lại', mark_soldout:'Đánh dấu hết món', no_image:'Không có ảnh', selected:'đã chọn', no_seats:'Chưa có bàn. Hãy thêm bàn mới.', floor_plan:'Sơ đồ cửa hàng', kitchen:'Bếp', restroom:'Nhà vệ sinh', bar:'Quầy bar', terrace:'Sân hiên'
+                no_orders:'Hiện không có đơn hàng.', reject_order:'Từ chối đơn', rejected:'Đã từ chối', table:'Bàn', order_time:'Thời gian', quantity:'Số lượng', total:'Tổng', complete_order:'Hoàn tất', completed:'Đã hoàn tất', no_reservations:'Hiện không có yêu cầu đặt bàn.', reservation_request:'Yêu cầu đặt bàn', waiting_request:'Yêu cầu chờ bàn', request_time:'Thời gian yêu cầu', party_size:'Số khách', people:'người', accept_reservation:'Chấp nhận', reject_reservation:'Từ chối/Hủy', accepted_reservation:'Đã chấp nhận', cancelled_reservation:'Đã hủy', clear_reservations:'Xóa lịch sử đặt bàn', confirm_clear_reservations:'Xóa toàn bộ lịch sử đặt bàn và giải phóng các bàn đã đặt?', reservation_history_cleared:'Đã xóa lịch sử đặt bàn.', estimated_wait_time:'Thời gian chờ dự kiến', minutes:'phút', not_set:'Chưa đặt', wait_time_prompt:'Nhập thời gian chờ dự kiến theo phút. (0–1440)', invalid_wait_time:'Nhập số nguyên từ 0 đến 1440.', wait_time_saved:'Đã lưu thời gian chờ dự kiến.', edit:'Sửa', resume:'Bán lại', mark_soldout:'Đánh dấu hết món', no_image:'Không có ảnh', selected:'đã chọn', no_seats:'Chưa có bàn. Hãy thêm bàn mới.', floor_plan:'Sơ đồ cửa hàng', kitchen:'Bếp', restroom:'Nhà vệ sinh', bar:'Quầy bar', terrace:'Sân hiên'
             }
         };
         let adminLanguage = localStorage.getItem('qmenu_admin_language') || 'ko';
@@ -964,12 +967,14 @@
                 const isPending = reservation.status === 'reserved' || reservation.status === 'waiting';
                 const isAccepted = reservation.status === 'accepted';
                 const requestLabel = reservation.status === 'waiting' ? tr('waiting_request') : tr('reservation_request');
+                const waitMinutes = Number(reservation.estimated_wait_minutes || 0);
                 return `
                     <div class="card-container" style="padding:1rem; margin-bottom:1rem; border-left:4px solid ${isPending ? 'var(--accent-warning)' : isAccepted ? 'var(--accent-success)' : '#ef4444'}">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
                             <div>
                                 <h3 style="margin-bottom:0.25rem; font-size:1.1rem;"><i class="fa-solid fa-calendar-check"></i> [${escapeHtml(reservation.table_id)} ${tr('table')}] ${requestLabel}</h3>
                                 <div style="color:var(--text-secondary); font-size:0.85rem;">${tr('request_time')}: ${escapeHtml(new Date(reservation.created_at).toLocaleString(locale))} | ${tr('party_size')}: ${Number(reservation.party_size || 0)} ${tr('people')}</div>
+                                <button type="button" onclick="editReservationWaitTime('${reservation.id}')" style="margin-top:0.6rem; padding:0.4rem 0.65rem; border:1px solid var(--border-color); border-radius:8px; background:var(--input-bg); color:var(--text-primary); cursor:pointer; font-size:0.8rem;"><i class="fa-regular fa-clock"></i> ${tr('estimated_wait_time')}: ${waitMinutes > 0 ? `${waitMinutes} ${tr('minutes')}` : tr('not_set')} <i class="fa-solid fa-pen" style="font-size:0.7rem; margin-left:0.3rem;"></i></button>
                             </div>
                             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                                 ${isPending
@@ -986,14 +991,61 @@
 
         async function updateReservation(id, status) {
             try {
-                await apiFetch(`/api/reservations/${encodeURIComponent(id)}/status`, {
+                const data = await apiFetch(`/api/reservations/${encodeURIComponent(id)}/status`, {
                     method: 'PUT', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ status })
                 });
+                if (status === 'accepted' && data.reservation) {
+                    const table = seatLayoutState.find(seat => seat.id === data.reservation.table_id);
+                    if (table) {
+                        table.status = 'reserved';
+                        syncSeatButtonStyles();
+                    }
+                }
                 await Promise.all([fetchReservations(), fetchTables()]);
             } catch(error) {
                 console.error('Reservation status update error', error);
                 alert(adminMessage('예약 상태를 변경하지 못했습니다.', 'Could not update the reservation.', 'Không thể cập nhật trạng thái đặt bàn.'));
+            }
+        }
+
+        async function editReservationWaitTime(id) {
+            const reservation = reservationsData.find(item => item.id === id);
+            if (!reservation) return;
+            const currentValue = Number(reservation.estimated_wait_minutes || 0);
+            const input = window.prompt(tr('wait_time_prompt'), String(currentValue));
+            if (input === null) return;
+            const minutes = Number(input);
+            if (!Number.isInteger(minutes) || minutes < 0 || minutes > 1440) {
+                alert(tr('invalid_wait_time'));
+                return;
+            }
+            try {
+                const data = await apiFetch(`/api/reservations/${encodeURIComponent(id)}/wait-time`, {
+                    method: 'PUT', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ estimated_wait_minutes: minutes })
+                });
+                const index = reservationsData.findIndex(item => item.id === id);
+                if (index >= 0) reservationsData[index] = data.reservation;
+                renderReservations();
+                alert(tr('wait_time_saved'));
+            } catch (error) {
+                console.error('Reservation wait time update error', error);
+                alert(error.message || tr('invalid_wait_time'));
+            }
+        }
+
+        async function clearReservationHistory() {
+            if (!window.confirm(tr('confirm_clear_reservations'))) return;
+            try {
+                await apiFetch('/api/reservations', { method: 'DELETE' });
+                reservationsData = [];
+                renderReservations();
+                await fetchTables();
+                alert(tr('reservation_history_cleared'));
+            } catch (error) {
+                console.error('Reservation history clear error', error);
+                alert(error.message || tr('confirm_clear_reservations'));
             }
         }
 

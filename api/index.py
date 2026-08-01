@@ -241,6 +241,10 @@ class ReservationStatusUpdate(BaseModel):
     status: Literal["accepted", "cancelled"]
 
 
+class ReservationWaitTimeUpdate(BaseModel):
+    estimated_wait_minutes: int = Field(ge=0, le=1440)
+
+
 class ReviewCreate(BaseModel):
     rating: float = Field(ge=0.5, le=5, multiple_of=0.5)
     review_text: str = Field(min_length=1, max_length=2000)
@@ -341,6 +345,7 @@ def reservation_to_public(row: Dict[str, Any]) -> Dict[str, Any]:
         "status": row["status"],
         "customer_session_id": row["customer_session_id"],
         "party_size": int(row.get("party_size") or 0),
+        "estimated_wait_minutes": int(row.get("estimated_wait_minutes") or 0),
         "created_at": row["created_at"],
         "updated_at": row.get("updated_at"),
     }
@@ -576,31 +581,22 @@ class SupabaseRepository:
         response = self._run(operation, "예약을 불러오지 못했습니다.")
         return response.data or []
 
-    def has_active_reservation(
-        self,
-        table_id: str,
-        statuses: set[str] | None = None,
-        customer_session_id: str | None = None,
-    ) -> bool:
-        active_statuses = statuses or ACTIVE_RESERVATION_STATUSES
-
-        def operation() -> Any:
-            query = (
-                self.client.table("reservations")
-                .select("id")
-                .eq("store_id", self.store_id)
-                .eq("table_id", table_id)
-                .in_("status", sorted(active_statuses))
-            )
-            if customer_session_id:
-                query = query.eq("customer_session_id", customer_session_id)
-            return query.limit(1).execute()
-
+    def get_customer_active_reservation(
+        self, table_id: str, customer_session_id: str
+    ) -> Optional[Dict[str, Any]]:
         response = self._run(
-            operation,
-            "예약 중복 여부를 확인하지 못했습니다.",
+            lambda: self.client.table("reservations")
+            .select("*")
+            .eq("store_id", self.store_id)
+            .eq("table_id", table_id)
+            .eq("customer_session_id", customer_session_id)
+            .in_("status", sorted(ACTIVE_RESERVATION_STATUSES))
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute(),
+            "기존 예약 정보를 확인하지 못했습니다.",
         )
-        return bool(response.data)
+        return response.data[0] if response.data else None
 
     def create_reservation(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         response = self._run(
@@ -650,6 +646,31 @@ class SupabaseRepository:
         if not response.data:
             raise HTTPException(status_code=404, detail="예약을 찾을 수 없습니다.")
         return response.data
+
+    def update_reservation_wait_time(
+        self, reservation_id: str, estimated_wait_minutes: int
+    ) -> Dict[str, Any]:
+        response = self._run(
+            lambda: self.client.table("reservations")
+            .update({"estimated_wait_minutes": estimated_wait_minutes})
+            .eq("store_id", self.store_id)
+            .eq("id", reservation_id)
+            .execute(),
+            "예상 대기시간을 저장하지 못했습니다.",
+        )
+        if not response.data:
+            raise HTTPException(status_code=404, detail="예약을 찾을 수 없습니다.")
+        return response.data[0]
+
+    def clear_reservations(self) -> int:
+        response = self._run(
+            lambda: self.client.rpc(
+                "clear_store_reservations",
+                {"p_store_id": self.store_id},
+            ).execute(),
+            "예약 기록을 초기화하지 못했습니다.",
+        )
+        return int(response.data or 0)
 
     def get_reviews(self) -> List[Dict[str, Any]]:
         response = self._run(
@@ -1087,6 +1108,16 @@ def get_reservations(
     ]
 
 
+@app.delete("/api/reservations")
+def clear_reservations() -> Dict[str, Any]:
+    deleted_count = get_repository().clear_reservations()
+    return {
+        "success": True,
+        "message": "예약 기록이 초기화되었습니다.",
+        "deleted_count": deleted_count,
+    }
+
+
 @app.post("/api/reservations", status_code=201)
 def create_reservation(payload: ReservationCreate) -> Dict[str, Any]:
     if payload.mode == "web":
@@ -1106,33 +1137,31 @@ def create_reservation(payload: ReservationCreate) -> Dict[str, Any]:
             detail=f"이 테이블은 최대 {max_party_size}명까지 예약할 수 있습니다.",
         )
 
-    requested_status = (
-        "reserved" if table.get("status") == "available" else "waiting"
-    )
-    if requested_status == "reserved" and repo.has_active_reservation(
-        payload.table_id, {"reserved", "accepted"}
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="이미 진행 중인 예약이 있는 테이블입니다.",
+    # A repeated tap on a non-available table is idempotent for this customer.
+    # Available tables are always passed to the SQL transaction so stale active
+    # rows can be retired atomically before the new reservation is inserted.
+    if table.get("status") != "available":
+        existing = repo.get_customer_active_reservation(
+            payload.table_id, session_id
         )
-    if requested_status == "waiting" and repo.has_active_reservation(
-        payload.table_id,
-        customer_session_id=session_id,
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="이미 이 테이블에 예약 또는 대기를 신청했습니다.",
-        )
+        if existing:
+            reservation = reservation_to_public(existing)
+            return {
+                "success": True,
+                "message": "이미 등록된 예약 또는 웨이팅 요청입니다.",
+                "reservation_id": reservation["id"],
+                "reservation": reservation,
+                "already_exists": True,
+            }
     row = repo.create_reservation(
         {
             "table_id": payload.table_id,
-            "status": requested_status,
             "customer_session_id": session_id,
             "party_size": payload.party_size,
         }
     )
     reservation = reservation_to_public(row)
+    requested_status = reservation["status"]
     return {
         "success": True,
         "message": (
@@ -1156,6 +1185,20 @@ def update_reservation_status(
     return {
         "success": True,
         "message": "예약 상태가 변경되었습니다.",
+        "reservation": reservation_to_public(row),
+    }
+
+
+@app.put("/api/reservations/{reservation_id}/wait-time")
+def update_reservation_wait_time(
+    reservation_id: UUID, payload: ReservationWaitTimeUpdate
+) -> Dict[str, Any]:
+    row = get_repository().update_reservation_wait_time(
+        str(reservation_id), payload.estimated_wait_minutes
+    )
+    return {
+        "success": True,
+        "message": "예상 대기시간이 저장되었습니다.",
         "reservation": reservation_to_public(row),
     }
 

@@ -25,6 +25,7 @@ create table if not exists public.menus (
     price numeric not null check (price >= 0),
     currency text not null,
     description jsonb not null,
+    category text not null default '',
     tags jsonb not null default '[]'::jsonb,
     image_data text,
     image_url text,
@@ -80,6 +81,9 @@ create table if not exists public.reservations (
     ),
     customer_session_id text not null,
     party_size integer not null default 1 check (party_size between 1 and 4),
+    estimated_wait_minutes integer not null default 0 check (
+        estimated_wait_minutes between 0 and 1440
+    ),
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
@@ -105,6 +109,7 @@ alter table public.stores add column if not exists hours_vi text;
 alter table public.stores add column if not exists description_en text;
 alter table public.stores add column if not exists description_vi text;
 alter table public.stores add column if not exists menu_categories jsonb not null default '[]'::jsonb;
+alter table public.menus add column if not exists category text not null default '';
 alter table public.tables add column if not exists table_image text;
 alter table public.tables add column if not exists view_image text;
 alter table public.reviews add column if not exists reply text;
@@ -115,6 +120,12 @@ alter table public.reviews add constraint reviews_rating_check check (
     rating between 0.5 and 5 and mod(rating * 2, 1) = 0
 );
 alter table public.reservations alter column party_size set default 1;
+alter table public.reservations add column if not exists estimated_wait_minutes
+    integer not null default 0;
+alter table public.reservations drop constraint if exists reservations_estimated_wait_minutes_check;
+alter table public.reservations add constraint reservations_estimated_wait_minutes_check check (
+    estimated_wait_minutes between 0 and 1440
+);
 update public.reservations
 set party_size = greatest(1, least(4, party_size))
 where party_size not between 1 and 4;
@@ -303,25 +314,33 @@ begin
         raise exception 'invalid party size';
     end if;
 
-    v_status := case when v_table.status = 'available' then 'reserved' else 'waiting' end;
-
-    if v_status = 'reserved' and exists (
-        select 1 from public.reservations
+    if v_table.status = 'available' then
+        -- The table status is the source of truth. If an administrator released
+        -- the table, retire stale booking rows before creating the new booking.
+        update public.reservations
+        set status = 'cancelled'
         where store_id = p_store_id
           and table_id = v_table.table_code
-          and status in ('reserved', 'accepted')
-    ) then
-        raise exception 'active reservation exists';
+          and status in ('reserved', 'waiting', 'accepted');
+        v_status := 'reserved';
+    else
+        v_status := 'waiting';
     end if;
 
-    if v_status = 'waiting' and exists (
-        select 1 from public.reservations
+    if v_status = 'waiting' then
+        select *
+        into v_reservation
+        from public.reservations
         where store_id = p_store_id
           and table_id = v_table.table_code
           and customer_session_id = p_customer_session_id
           and status in ('reserved', 'waiting', 'accepted')
-    ) then
-        raise exception 'duplicate customer reservation';
+        order by created_at desc
+        limit 1;
+
+        if found then
+            return to_jsonb(v_reservation);
+        end if;
     end if;
 
     insert into public.reservations (
@@ -396,6 +415,39 @@ begin
     end if;
 
     return to_jsonb(v_reservation);
+end;
+$$;
+
+create or replace function public.clear_store_reservations(
+    p_store_id uuid
+)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_deleted_count integer := 0;
+    v_table_codes text[];
+begin
+    with deleted as (
+        delete from public.reservations
+        where store_id = p_store_id
+        returning table_id
+    )
+    select count(*)::integer, array_agg(distinct table_id)
+    into v_deleted_count, v_table_codes
+    from deleted;
+
+    if v_table_codes is not null then
+        update public.tables
+        set status = 'available'
+        where store_id = p_store_id
+          and status = 'reserved'
+          and table_code = any(v_table_codes);
+    end if;
+
+    return v_deleted_count;
 end;
 $$;
 
