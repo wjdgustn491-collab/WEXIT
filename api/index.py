@@ -542,13 +542,48 @@ class SupabaseRepository:
         return response.data or []
 
     def create_order(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            response = self.client.rpc(
+                "create_order_and_occupy_table",
+                {
+                    "p_store_id": self.store_id,
+                    "p_table_code": payload["table_id"],
+                    "p_menu_id": payload["menu_id"],
+                    "p_menu_name": payload["menu_name"],
+                    "p_quantity": payload["quantity"],
+                    "p_total_price": payload["total_price"],
+                    "p_currency": payload["currency"],
+                    "p_customer_session_id": payload["customer_session_id"],
+                },
+            ).execute()
+            if response.data:
+                return (
+                    response.data[0]
+                    if isinstance(response.data, list)
+                    else response.data
+                )
+            logger.warning("Order RPC returned no data; using compatibility path")
+        except Exception:
+            # Keep ordering available until schema.sql has been reapplied on an
+            # older deployment that does not have the transactional RPC yet.
+            logger.warning("Order RPC failed; using compatibility path", exc_info=True)
+
         response = self._run(
             lambda: self.client.table("orders")
             .insert({"store_id": self.store_id, **payload})
             .execute(),
             "주문을 등록하지 못했습니다.",
         )
-        return response.data[0]
+        row = response.data[0]
+        try:
+            self.client.table("tables").update(
+                {"status": "occupied", "updated_at": utc_now()}
+            ).eq("store_id", self.store_id).eq(
+                "table_code", payload["table_id"]
+            ).execute()
+        except Exception:
+            logger.exception("Order was created but table status was not updated")
+        return row
 
     def update_order_status(
         self, order_id: str, status: str
@@ -1146,11 +1181,6 @@ def create_order(payload: OrderCreate) -> Dict[str, Any]:
     table = repo.get_table(payload.table_id)
     if not table:
         raise HTTPException(status_code=404, detail="존재하지 않는 테이블입니다.")
-    if table.get("status") not in {"occupied", "reserved"}:
-        raise HTTPException(
-            status_code=409,
-            detail="이용 중이거나 예약 중인 테이블에서만 주문할 수 있습니다.",
-        )
 
     row = repo.create_order(
         {

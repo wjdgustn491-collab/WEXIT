@@ -367,6 +367,66 @@ begin
 end;
 $$;
 
+create or replace function public.create_order_and_occupy_table(
+    p_store_id uuid,
+    p_table_code text,
+    p_menu_id uuid,
+    p_menu_name text,
+    p_quantity integer,
+    p_total_price numeric,
+    p_currency text,
+    p_customer_session_id text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_table public.tables%rowtype;
+    v_order public.orders%rowtype;
+begin
+    select *
+    into v_table
+    from public.tables
+    where store_id = p_store_id
+      and table_code = upper(trim(p_table_code))
+    for update;
+
+    if not found then
+        raise exception 'table not found';
+    end if;
+
+    insert into public.orders (
+        store_id,
+        table_id,
+        menu_id,
+        menu_name,
+        quantity,
+        total_price,
+        currency,
+        status,
+        customer_session_id
+    ) values (
+        p_store_id,
+        v_table.table_code,
+        p_menu_id,
+        p_menu_name,
+        p_quantity,
+        p_total_price,
+        p_currency,
+        'pending',
+        p_customer_session_id
+    ) returning * into v_order;
+
+    update public.tables
+    set status = 'occupied'
+    where id = v_table.id;
+
+    return to_jsonb(v_order);
+end;
+$$;
+
 create or replace function public.update_reservation_and_table(
     p_store_id uuid,
     p_reservation_id uuid,
@@ -404,7 +464,8 @@ begin
         update public.tables
         set status = 'reserved'
         where store_id = p_store_id
-          and table_code = v_reservation.table_id;
+          and table_code = v_reservation.table_id
+          and status <> 'occupied';
     elsif not exists (
         select 1
         from public.reservations
@@ -415,7 +476,8 @@ begin
         update public.tables
         set status = 'available'
         where store_id = p_store_id
-          and table_code = v_reservation.table_id;
+          and table_code = v_reservation.table_id
+          and status <> 'occupied';
     end if;
 
     return to_jsonb(v_reservation);
