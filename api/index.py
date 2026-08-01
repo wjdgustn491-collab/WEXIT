@@ -188,6 +188,20 @@ class TableLayoutUpdate(BaseModel):
         return self
 
 
+class TableOrderUpdate(BaseModel):
+    table_ids: List[str] = Field(max_length=200)
+
+    @field_validator("table_ids")
+    @classmethod
+    def normalize_table_codes(cls, values: List[str]) -> List[str]:
+        normalized = [str(value).strip().upper() for value in values]
+        if any(not value or len(value) > 32 for value in normalized):
+            raise ValueError("테이블 코드는 1자 이상 32자 이하여야 합니다.")
+        if len(normalized) != len(set(normalized)):
+            raise ValueError("중복된 테이블 코드는 사용할 수 없습니다.")
+        return normalized
+
+
 class KeywordUpdate(BaseModel):
     keywords: List[str] = Field(max_length=50)
 
@@ -516,6 +530,88 @@ class SupabaseRepository:
             ).execute(),
             "좌석 배치를 저장하지 못했습니다.",
         )
+        return self.get_tables()
+
+    def occupy_table(self, table_code: str) -> Dict[str, Any]:
+        try:
+            response = self.client.rpc(
+                "occupy_store_table",
+                {"p_store_id": self.store_id, "p_table_code": table_code},
+            ).execute()
+            if response.data:
+                return (
+                    response.data[0]
+                    if isinstance(response.data, list)
+                    else response.data
+                )
+            logger.warning(
+                "Table occupy RPC returned no data; using compatibility path"
+            )
+        except Exception:
+            logger.warning(
+                "Table occupy RPC failed; using compatibility path",
+                exc_info=True,
+            )
+
+        table = self.get_table(table_code)
+        if not table:
+            raise HTTPException(status_code=404, detail="테이블을 찾을 수 없습니다.")
+        if table.get("status") not in {"available", "reserved", "occupied"}:
+            raise HTTPException(
+                status_code=409,
+                detail="현재 상태에서는 테이블 이용을 시작할 수 없습니다.",
+            )
+        if table.get("status") == "occupied":
+            return table
+        response = self._run(
+            lambda: self.client.table("tables")
+            .update({"status": "occupied", "updated_at": utc_now()})
+            .eq("store_id", self.store_id)
+            .eq("id", table["id"])
+            .in_("status", ["available", "reserved"])
+            .execute(),
+            "테이블 이용 상태를 변경하지 못했습니다.",
+        )
+        if response.data:
+            return response.data[0]
+        refreshed_table = self.get_table(table_code)
+        if not refreshed_table:
+            raise HTTPException(status_code=404, detail="테이블을 찾을 수 없습니다.")
+        return refreshed_table
+
+    def reorder_tables(self, table_codes: List[str]) -> List[Dict[str, Any]]:
+        try:
+            self.client.rpc(
+                "reorder_store_tables",
+                {"p_store_id": self.store_id, "p_table_codes": table_codes},
+            ).execute()
+            return self.get_tables()
+        except Exception:
+            logger.warning(
+                "Table reorder RPC failed; using compatibility path",
+                exc_info=True,
+            )
+
+        current_tables = self.get_tables()
+        current_codes = [str(table["table_code"]) for table in current_tables]
+        if len(table_codes) != len(current_codes) or set(table_codes) != set(
+            current_codes
+        ):
+            raise HTTPException(
+                status_code=409,
+                detail="현재 테이블 목록과 QR 순서가 일치하지 않습니다.",
+            )
+        for sort_order, table_code in enumerate(table_codes, start=1):
+            self._run(
+                lambda code=table_code, order=sort_order: self.client.table(
+                    "tables"
+                )
+                .update({"sort_order": order, "updated_at": utc_now()})
+                .eq("store_id", self.store_id)
+                .eq("table_code", code)
+                .execute(),
+                "테이블 QR 순서를 저장하지 못했습니다.",
+            )
         return self.get_tables()
 
     def get_keywords(self) -> List[str]:
@@ -1135,6 +1231,31 @@ def update_tables(payload: TableLayoutUpdate) -> Dict[str, Any]:
     return {
         "success": True,
         "message": "좌석 배치가 저장되었습니다.",
+        "tables": [table_to_public(row) for row in rows],
+    }
+
+
+@app.post("/api/tables/{table_code}/occupy")
+def occupy_table(table_code: str) -> Dict[str, Any]:
+    normalized_code = table_code.strip().upper()
+    if not normalized_code or len(normalized_code) > 32:
+        raise HTTPException(status_code=422, detail="유효하지 않은 테이블 코드입니다.")
+    row = get_repository().occupy_table(normalized_code)
+    if not row:
+        raise HTTPException(status_code=404, detail="테이블을 찾을 수 없습니다.")
+    return {
+        "success": True,
+        "message": "테이블 이용을 시작했습니다.",
+        "table": table_to_public(row),
+    }
+
+
+@app.put("/api/tables/order")
+def reorder_tables(payload: TableOrderUpdate) -> Dict[str, Any]:
+    rows = get_repository().reorder_tables(payload.table_ids)
+    return {
+        "success": True,
+        "message": "테이블 QR 순서가 저장되었습니다.",
         "tables": [table_to_public(row) for row in rows],
     }
 

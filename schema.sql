@@ -367,6 +367,94 @@ begin
 end;
 $$;
 
+create or replace function public.occupy_store_table(
+    p_store_id uuid,
+    p_table_code text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_table public.tables%rowtype;
+begin
+    select *
+    into v_table
+    from public.tables
+    where store_id = p_store_id
+      and table_code = upper(trim(p_table_code))
+    for update;
+
+    if not found then
+        raise exception 'table not found';
+    end if;
+
+    if v_table.status not in ('available', 'reserved', 'occupied') then
+        raise exception 'table cannot be occupied from current status';
+    end if;
+
+    if v_table.status <> 'occupied' then
+        update public.tables
+        set status = 'occupied'
+        where id = v_table.id
+        returning * into v_table;
+    end if;
+
+    return to_jsonb(v_table);
+end;
+$$;
+
+create or replace function public.reorder_store_tables(
+    p_store_id uuid,
+    p_table_codes jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if jsonb_typeof(p_table_codes) <> 'array' then
+        raise exception 'p_table_codes must be a JSON array';
+    end if;
+
+    if exists (
+        select 1
+        from jsonb_array_elements_text(p_table_codes) as item(table_code)
+        group by upper(trim(item.table_code))
+        having count(*) > 1
+    ) then
+        raise exception 'duplicate table_code';
+    end if;
+
+    if jsonb_array_length(p_table_codes) <> (
+        select count(*) from public.tables where store_id = p_store_id
+    ) or exists (
+        select 1
+        from jsonb_array_elements_text(p_table_codes) as item(table_code)
+        where not exists (
+            select 1
+            from public.tables table_item
+            where table_item.store_id = p_store_id
+              and table_item.table_code = upper(trim(item.table_code))
+        )
+    ) then
+        raise exception 'table list mismatch';
+    end if;
+
+    update public.tables table_item
+    set sort_order = ordered.position::integer
+    from (
+        select upper(trim(item.table_code)) as table_code, item.position
+        from jsonb_array_elements_text(p_table_codes)
+            with ordinality as item(table_code, position)
+    ) ordered
+    where table_item.store_id = p_store_id
+      and table_item.table_code = ordered.table_code;
+end;
+$$;
+
 create or replace function public.create_order_and_occupy_table(
     p_store_id uuid,
     p_table_code text,

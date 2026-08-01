@@ -10,6 +10,7 @@ Google Gemini를 연결한 매장 주문·예약 데모입니다. 기존 UI와 �
 
 - 매장 정보, 메뉴, 실내·테라스 좌석 배치 및 상태 조회
 - 테이블별 `store&table_id=...` QR 진입과 해당 테이블에 고정된 메뉴 주문
+- 이용 가능·예약 테이블 QR 스캔 시 해당 좌석을 즉시 `occupied`로 전환
 - 좌석 예약 및 웨이팅 요청
 - 고객 브라우저 UUID별 주문·예약 현황 조회와 5초 갱신
 - 최신 매장·판매 메뉴·좌석 데이터를 사용하는 AI 메뉴 및 좌석 안내
@@ -21,6 +22,7 @@ Google Gemini를 연결한 매장 주문·예약 데모입니다. 기존 UI와 �
 - 매장 정보, 추천 키워드, 메뉴 및 품절 상태 관리
 - 좌석 선택, 드래그, 추가, 삭제, 위치·상태·뷰·태그 편집
 - 현재 배포 도메인을 사용하는 외부용 QR과 저장된 테이블별 매장 주문 QR 생성
+- 드래그 방식의 테이블 QR 표시 순서 변경 및 저장
 - 다크·라이트 모드
 
 ## 데이터 흐름
@@ -71,6 +73,8 @@ SQL 함수 안에서 하나의 트랜잭션으로 수행됩니다.
 | GET, POST | `/api/menus` | 메뉴 목록·등록 |
 | PUT, DELETE | `/api/menus/{menu_id}` | UUID 기반 메뉴 수정·삭제 |
 | GET, PUT | `/api/tables` | 좌석 배치 조회·일괄 저장 |
+| POST | `/api/tables/{table_code}/occupy` | 테이블 QR 입장 및 이용 중 전환 |
+| PUT | `/api/tables/order` | 테이블 QR 표시 순서 저장 |
 | GET, PUT | `/api/keywords` | 추천 키워드 조회·저장 |
 | GET, POST | `/api/orders` | 주문 조회·등록 |
 | PUT | `/api/orders/{order_id}/status` | 주문 상태 변경 |

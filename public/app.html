@@ -1229,8 +1229,25 @@
                     });
 
                 apiFetch('/api/tables')
-                    .then(data => {
-                        setTables(data);
+                    .then(async data => {
+                        let nextTables = data;
+                        const scannedTable = appMode === 'store'
+                            ? data.find(table => table.id === qrTableId)
+                            : null;
+                        if (scannedTable && ['available', 'reserved'].includes(scannedTable.status)) {
+                            try {
+                                const result = await apiFetch(`/api/tables/${encodeURIComponent(qrTableId)}/occupy`, {
+                                    method: 'POST'
+                                });
+                                nextTables = data.map(table => (
+                                    table.id === result.table.id ? result.table : table
+                                ));
+                            } catch (error) {
+                                console.error('Table check-in failed', error);
+                                setLoadError(error.message);
+                            }
+                        }
+                        setTables(nextTables);
                         setTablesLoaded(true);
                     })
                     .catch(error => {
